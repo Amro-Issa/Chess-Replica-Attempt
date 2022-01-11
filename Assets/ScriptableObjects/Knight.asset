@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cbbdd6c16543364398074342cab622f, type: 3}
+  m_Name: Knight
+  m_EditorClassIdentifier: 
+  pieceClass:
+    pieceTypeSO: {fileID: 11400000}
+    type: 2
+    color: 0
+    pieceGameObject: {fileID: 0}
+  pieceName: Knight
+  piecePrefab: {fileID: 5945448033776692847, guid: d38941e1a432bd54ba396565884b55a7,
+    type: 3}
+  whitePieceSprite: {fileID: 21300000, guid: 74d00db97b359e24ab71c5fa5cc07af4, type: 3}
+  blackPieceSprite: {fileID: 21300000, guid: 8605f268859faf4449573586496b00c5, type: 3}
