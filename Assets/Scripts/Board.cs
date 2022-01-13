@@ -29,7 +29,7 @@ public class Board : MonoBehaviour
     {
         get
         {
-            return GetAllPieces(Piece.PieceColor.White);
+            return GetPieces(Piece.PieceColor.White);
         }
     }
 
@@ -37,23 +37,7 @@ public class Board : MonoBehaviour
     {
         get
         {
-            return GetAllPieces(Piece.PieceColor.Black);
-        }
-    }
-
-    public static Piece WhiteKing
-    {
-        get
-        {
-            return GetPiece(Piece.PieceColor.White, Piece.PieceType.King);
-        }
-    }
-
-    public static Piece BlackKing
-    {
-        get
-        {
-            return GetPiece(Piece.PieceColor.Black, Piece.PieceType.King);
+            return GetPieces(Piece.PieceColor.Black);
         }
     }
 
@@ -340,7 +324,7 @@ public class Board : MonoBehaviour
         return GetPiece(color, Piece.PieceType.King);
     }
 
-    public static List<Piece> GetAllPieces(Piece.PieceColor color = Piece.PieceColor.Any, Piece.PieceType type = Piece.PieceType.Any)
+    public static List<Piece> GetPieces(Piece.PieceColor color = Piece.PieceColor.Any, Piece.PieceType type = Piece.PieceType.Any)
     {
         var pieces = new List<Piece>();
 

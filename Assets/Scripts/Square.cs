@@ -279,7 +279,7 @@ public class Square : MonoBehaviour
     /// <returns></returns>
     public static int GetOffset(int square1, int square2, out int fileOrRankDiff)
     {
-        if (!(square1 >= 0 && square1 <= 63) || !(square2 >= 0 && square2 <= 63) || (square1 == square2))
+        if (!(square1 >= 0 && square1 <= Board.maxSquareNumber) || !(square2 >= 0 && square2 <= Board.maxSquareNumber) || (square1 == square2))
         {
             throw new System.Exception("ERROR");
         }

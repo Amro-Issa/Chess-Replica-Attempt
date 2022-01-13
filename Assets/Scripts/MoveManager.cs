@@ -17,7 +17,7 @@ public class MoveManager : MonoBehaviour
     public static bool BlackKingUnderCheck { get => blackKingUnderCheck; set { blackKingUnderCheck = CheckAllowed ? value : false; } }
     private static bool blackKingUnderCheck = false;
 
-    private static Square squareOfChecker = null;
+    public static Square squareOfChecker = null;
 
     public static bool CastleAllowed { get; set; } = true;
     public static bool CheckAllowed { get; set; } = true;
@@ -28,7 +28,7 @@ public class MoveManager : MonoBehaviour
 
     public static Square queenSideKingCastleSquare = null;
     public static Square queenSideRookCastleSquare = null;
-
+    
     private static int? enPassantSquareNumber = null;
 
     [SerializeField] private LayerMask squaresLayer;
@@ -208,7 +208,7 @@ public class MoveManager : MonoBehaviour
         //checking for check on the opposite color king
         List<int> legalMovesOfPieceOnNewSquare = CalculateLegalMoves(piece);
 
-        Square enemyKingSquare = (Piece.GetOppositeColor(piece.color) == Piece.PieceColor.White ? Board.WhiteKing : Board.BlackKing).square;
+        Square enemyKingSquare = Board.GetKing(Piece.GetOppositeColor(piece.color)).square;
 
         if (CheckAllowed && enemyKingSquare != null && legalMovesOfPieceOnNewSquare.Contains(enemyKingSquare.squareNumber))
         {
@@ -240,41 +240,7 @@ public class MoveManager : MonoBehaviour
 
     public static void AdjustLegalMovesToDealWithCheck(ref List<int> legalMoves, Piece.PieceType type, Piece.PieceColor color)
     {
-        var newLegalMoves = new List<int>();
-
-        int kingSquareNumber = (color == Piece.PieceColor.White ? Board.WhiteKing : Board.BlackKing).square.squareNumber;
-
-        if (type == Piece.PieceType.King) //since piece is king, apart from capturing, king can only move to safe square (obv cannot block check with himself)
-        {
-            var allDefendedSquaresOfOppositeColor = GetAllDefendedSquares(Piece.GetOppositeColor(color));
-
-            foreach (int move in legalMoves)
-            {
-                if (!allDefendedSquaresOfOppositeColor.Contains(move) && !Square.AreSquaresReachable(squareOfChecker.squareNumber, move)) //checking that the king actually MOVED out of the line of attack of the long-distance checker (queen, rook, bishop)
-                {
-                    newLegalMoves.Add(move);
-                }
-            }
-        }
-        //checking for blocking moves
-        else if (Square.TryGetSquaresInBetween(squareOfChecker.squareNumber, kingSquareNumber, out List<int> squaresInBetween))
-        {
-            foreach (int move in squaresInBetween)
-            {
-                if (legalMoves.Contains(move)) //if the legal moves contain that specific move that blocks the check
-                {
-                    newLegalMoves.Add(move);
-                }
-            }
-        }
-
-        //checking for a capture move
-        if (legalMoves.Contains(squareOfChecker.squareNumber)) //if move is capturing the checker
-        {
-            newLegalMoves.Add(squareOfChecker.squareNumber);
-        }
-
-        legalMoves = newLegalMoves;
+        
     }
 
     public static void AdjustLegalMovesForKing(List<int> legalMoves, Piece.PieceColor color)
@@ -290,112 +256,9 @@ public class MoveManager : MonoBehaviour
         }
     }
 
-    public static List<int> CalculateLegalMoves(Piece piece)
-    { 
-        AdjustLegalMovesForPinning(piece, ref moves);
-
-        return moves;
-    }
-
-    public static List<int> GetAllLegalMoves(Piece.PieceColor color)
-    {
-        List<int> allLegalMoves = new List<int>();
-
-        foreach(Square square in Board.SquareNumberToSquare.Values)
-        {
-            if (square.piece.color == color)
-            {
-                var pieceLegalMoves = CalculateLegalMoves(square.piece);
-
-                if (square.piece.type == Piece.PieceType.King)
-                {
-                    AdjustLegalMovesForKing(pieceLegalMoves, color);
-                }
-
-                allLegalMoves.AddRange(pieceLegalMoves);
-            }
-        }
-
-        return allLegalMoves;
-    }
-
     public static bool CheckForStalemate(Piece.PieceColor color)
     {
         return GetAllLegalMoves(color).Count == 0;
-    }
-
-    public enum CastleType
-    {
-        KingSide,
-        QueenSide
-    }
-
-    public static void Castle(Piece king, Piece rook, CastleType castleType)
-    {
-        int newKingSquareNumber;
-        int newRookSquareNumber;
-
-        if (castleType == CastleType.KingSide)
-        {
-            newKingSquareNumber = king.square.squareNumber + 2;
-            newRookSquareNumber = rook.square.squareNumber - 2;
-        }
-        else
-        {
-            newKingSquareNumber = king.square.squareNumber - 2;
-            newRookSquareNumber = rook.square.squareNumber + 3;
-        }
-
-        king.Move(Board.SquareNumberToSquare[newKingSquareNumber]);
-        rook.Move(Board.SquareNumberToSquare[newRookSquareNumber]);
-
-        //PLAY CASTLE SOUND EFFECT
-    }
-
-    public static bool IsCastlingAvailable(Piece.PieceColor color, Piece rook, out CastleType castleType, out Square rookCastleSquare, out Square kingCastleSquare, Piece king = null)
-    {
-        if (king == null) king = color == Piece.PieceColor.White ? Board.WhiteKing : Board.BlackKing;
-
-        castleType = rook.square.squareNumber < king.square.squareNumber ? CastleType.QueenSide : CastleType.KingSide;
-
-        rookCastleSquare = null;
-        kingCastleSquare = null;
-
-        if (!king.hasMoved && !rook.hasMoved)
-        {
-            int mult = castleType == CastleType.QueenSide ? 1 : 0;
-
-            if (Square.AreSquaresInBetweenEmpty(king.square.squareNumber, rook.square.squareNumber + mult) /*&& todo*/) //FOR NOW KEEP BUT LATER...CHANGE TO GET THE SQUARES BETWEEN THE KING AND THE SQUARE 3 SQUARES BESIDE IT (NOT FROM KING TO ROOK) SO THAT YOU CAN STILL CASTLE DESPITE IF THERE IS A PIECE BLOCKING THE ROOKS PATH BUT NOT THE KING's
-            {
-                //check if path is guarded by enemy piece(s)
-                if (Square.AreSquaresGuarded(Piece.GetOppositeColor(color), Square.GetSquaresInBetween(king.square.squareNumber, rook.square.squareNumber + mult)))
-                {
-                    return false;
-                }
-
-                //Queen side castle                                         //King side castle
-                kingCastleSquare = king.square.squareNumber > rook.square.squareNumber ? Board.SquareNumberToSquare[king.square.squareNumber - 2] : Board.SquareNumberToSquare[king.square.squareNumber + 2];
-                rookCastleSquare = king.square.squareNumber > rook.square.squareNumber ? Board.SquareNumberToSquare[king.square.squareNumber + 3] : Board.SquareNumberToSquare[king.square.squareNumber - 2];
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    //not really highlighting, just "drawing" a point over the square
-    public static void HighlightLegalSquares(int currentSquareNum, List<int> legalMoves)
-    {
-        Board.SquareNumberToSquare[currentSquareNum].GetComponent<SpriteRenderer>().color = Board.Instance.selectColor;
-
-        if (legalMoves != null)
-        {
-            foreach (int squareNumber in legalMoves)
-            {
-                Board.SquareNumberToSquare[squareNumber].transform.GetChild(0).gameObject.SetActive(true);
-            }
-        }
     }
 
     public static void AdjustLegalMovesForPinning(Piece piece, ref List<int> moves)
@@ -434,6 +297,20 @@ public class MoveManager : MonoBehaviour
                         return;
                     }
                 }
+            }
+        }
+    }
+
+    //not really highlighting, just "drawing" a point over the square
+    public static void HighlightLegalSquares(int currentSquareNum, List<int> legalMoves)
+    {
+        Board.SquareNumberToSquare[currentSquareNum].GetComponent<SpriteRenderer>().color = Board.Instance.selectColor;
+
+        if (legalMoves != null)
+        {
+            foreach (int squareNumber in legalMoves)
+            {
+                Board.SquareNumberToSquare[squareNumber].transform.GetChild(0).gameObject.SetActive(true);
             }
         }
     }
