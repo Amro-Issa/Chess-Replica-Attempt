@@ -7,14 +7,14 @@ public class Square : MonoBehaviour
 {
     public enum Directions
     {
-        TopLeft = Board.fileCount - 1,
+        TopLeft = Board.maxFile,
         Top = Board.fileCount,
         TopRight = Board.fileCount + 1,
         Left = -1,
         Right = 1,
         BottomLeft = -Board.fileCount - 1,
         Bottom = -Board.fileCount,
-        BottomRight = -Board.fileCount + 1,
+        BottomRight = -Board.maxFile,
     }
 
     public int squareNumber;
@@ -23,14 +23,22 @@ public class Square : MonoBehaviour
 
     public Piece piece;
 
+    #region Offsets
     public static readonly List<Directions> diagonalOffsets = new List<Directions> { Directions.TopLeft, Directions.TopRight, Directions.BottomLeft, Directions.BottomRight };
     public static readonly List<Directions> orthogonalOffsets = new List<Directions> { Directions.Left, Directions.Right, Directions.Top, Directions.Bottom };
     public static readonly List<Directions> horizontalOffsets = new List<Directions> { Directions.Left, Directions.Right };
     public static readonly List<Directions> verticalOffsets = new List<Directions> { Directions.Top, Directions.Bottom };
+
+    #region PawnOffsets
     public static readonly List<Directions> whitePawnOffsets = new List<Directions> { Directions.TopLeft, Directions.Top, Directions.TopRight };
+    public static readonly List<Directions> whitePawnCaptureOffsets = new List<Directions> { Directions.TopLeft, Directions.TopRight };
+
     public static readonly List<Directions> blackPawnOffsets = new List<Directions> { Directions.BottomLeft, Directions.Bottom, Directions.BottomRight };
+    public static readonly List<Directions> blackPawnCaptureOffsets = new List<Directions> { Directions.BottomLeft, Directions.BottomRight };
+    #endregion
+
     public static readonly List<int> knightOffsets = new List<int>
-    { 
+    {
         (int)Directions.Bottom * 2 + (int)Directions.Left, //-17 for 8x8 
         (int)Directions.Bottom * 2 + (int)Directions.Right, //-15 for 8x8
         (int)Directions.Top * 2 + (int)Directions.Left, //15 for 8x8
@@ -40,6 +48,7 @@ public class Square : MonoBehaviour
         (int)Directions.Top + (int)Directions.Left * 2, //6 for 8x8
         (int)Directions.Top + (int)Directions.Right * 2, //10 for 8x8
     }; //order is important, the first 4 offsets are 1 file away from the original square, while the last 4 are 2 files away
+    #endregion
 
     public void Unoccupy()
     {
@@ -54,9 +63,8 @@ public class Square : MonoBehaviour
     #region IsSquareInRange
     public static bool IsSquareInRange(int square)
     {
-        return square >= 0 && square <= Board.maxSquareNumber;
+        return square >= 0 && square <= Board.maxSquare;
     }
-
     public static bool IsSquareInRange(int file, int rank)
     {
         return file >= 0 && file <= Board.fileCount - 1 && rank >= 0 && rank <= Board.rankCount - 1;
@@ -75,17 +83,14 @@ public class Square : MonoBehaviour
 
         return temp;
     }
-
     public static int GetRank(int squareNumber)
     {
         return squareNumber / Board.fileCount;
     }
-
     public static int GetFileDifference(int square1, int square2, bool absoluteValue = true)
     {
         return absoluteValue ? Mathf.Abs(GetFile(square1) - GetFile(square2)) : GetFile(square1) - GetFile(square2);
     }
-
     public static int GetRankDifference(int square1, int square2, bool absoluteValue = true)
     {
         return absoluteValue ? Mathf.Abs(GetRank(square1) - GetRank(square2)) : GetRank(square1) - GetRank(square2);
@@ -97,12 +102,10 @@ public class Square : MonoBehaviour
     {
         return rank * Board.fileCount + file; //(file * Board.rankCount + rank) also works
     }
-
     public static int GetSquare(int referenceSquare, Directions direction)
     {
         return referenceSquare + (int)direction;
     }
-
     public static bool TryGetSquare(int file, int rank, out int targetSquare)
     {
         if (!IsSquareInRange(file, rank))
@@ -114,7 +117,6 @@ public class Square : MonoBehaviour
         targetSquare = GetSquare(file, rank);
         return true;
     } //use when arguments are not certain
-
     public static bool TryGetSquare(int referenceSquare, Directions direction, out int targetSquare) //returns true if operation was successful
     {
         targetSquare = referenceSquare + (int)direction;
@@ -127,7 +129,6 @@ public class Square : MonoBehaviour
 
         return true;
     } //use when arguments are not certain
-
     public static int GetBoundarySquare(int referenceSquare, Directions direction)
     {
         int file = GetFile(referenceSquare);
@@ -185,18 +186,12 @@ public class Square : MonoBehaviour
     }
 
     #region SquaresInBetween
-    public static List<int> GetSquaresInBetween(int square1, int square2)
+    public static List<int> GetSquaresInBetween(int square1, int square2, bool inclusiveOfSquare1 = false, bool inclusiveOfSquare2 = false)
     {
-        TryGetSquaresInBetween(square1, square2, out var squares);
-
-        if (squares.Count == 0)
-        {
-            return null;
-        }
+        TryGetSquaresInBetween(square1, square2, out var squares, inclusiveOfSquare1, inclusiveOfSquare2);
 
         return squares;
     }
-
     /// <summary>
     /// Gets the squares in between, if possible
     /// </summary>
@@ -204,7 +199,7 @@ public class Square : MonoBehaviour
     /// <param name="square2"></param>
     /// <param name="squares"></param>
     /// <returns>True if there are squares in between, and false if there aren't, or the squares are not reachable or the squares are the same</returns>
-    public static bool TryGetSquaresInBetween(int square1, int square2, out List<int> squares, bool inclusiveOfSquare2 = false)
+    public static bool TryGetSquaresInBetween(int square1, int square2, out List<int> squares, bool inclusiveOfSquare1 = false, bool inclusiveOfSquare2 = false)
     {
         squares = new List<int>();
 
@@ -213,7 +208,7 @@ public class Square : MonoBehaviour
             return false;
         }
 
-        for (int i = 0, temp = square1 + offsetFromSquare1; i < (inclusiveOfSquare2 ? diff : diff - 1); i++) //(diff - 1) is the number of squares between the two squares
+        for (int i = 0, temp = square1 + (inclusiveOfSquare1 ? 0 : offsetFromSquare1); i < (inclusiveOfSquare2 ? diff : diff - 1); i++) //(diff - 1) is the number of squares between the two squares (exclusive)
         {
             squares.Add(temp);
             temp += offsetFromSquare1;
@@ -226,15 +221,13 @@ public class Square : MonoBehaviour
 
         return true;
     }
-   
-
     public static bool AreSquaresInBetweenEmpty(int square1, int square2)
     {
         if (TryGetSquaresInBetween(square1, square2, out List<int> squaresInBetween))
         {
             foreach (int squareNumber in squaresInBetween)
             {
-                if (Board.SquareNumberToSquare[squareNumber].piece == Piece.Empty)
+                if (Board.SquareNumberToSquare[squareNumber].piece == null)
                 {
                     continue;
                 }
@@ -245,16 +238,15 @@ public class Square : MonoBehaviour
             return true;
         }
 
-        throw new System.Exception();
+        throw new Exception();
     }
-
     public static bool AreSquaresInBetweenEmpty(Piece piece1, Piece piece2)
     {
         if (TryGetSquaresInBetween(piece1.square.squareNumber, piece2.square.squareNumber, out List<int> squaresInBetween))
         {
             foreach (int squareNumber in squaresInBetween)
             {
-                if (Board.SquareNumberToSquare[squareNumber].piece == Piece.Empty)
+                if (Board.SquareNumberToSquare[squareNumber].piece == null)
                 {
                     continue;
                 }
@@ -279,7 +271,7 @@ public class Square : MonoBehaviour
     /// <returns></returns>
     public static int GetOffset(int square1, int square2, out int fileOrRankDiff)
     {
-        if (!(square1 >= 0 && square1 <= Board.maxSquareNumber) || !(square2 >= 0 && square2 <= Board.maxSquareNumber) || (square1 == square2))
+        if (!(square1 >= 0 && square1 <= Board.maxSquare) || !(square2 >= 0 && square2 <= Board.maxSquare) || (square1 == square2))
         {
             throw new System.Exception("ERROR");
         }
@@ -307,7 +299,6 @@ public class Square : MonoBehaviour
 
         return (square2 - square1) / fileOrRankDiff; //equation
     }
-
     /// <summary>
     /// Gets the offset between two squares with the origin being at square1 
     /// </summary>
@@ -363,7 +354,7 @@ public class Square : MonoBehaviour
     {
         return TryGetOffset(square1, square2, out _, out _);
     }
-
+    
     /// <summary>
     /// 
     /// </summary>
@@ -372,11 +363,11 @@ public class Square : MonoBehaviour
     /// <returns>True if any one of the squares passed in are guarded by the color specified</returns>
     public static bool AreSquaresGuarded(Piece.PieceColor color, List<int> squares)
     {
-        var m = MoveManager.GetAllDefendedSquares(color);
+        var defendedSquares = Piece.GetAllDefendedSquares(color);
 
         foreach (int square in squares)
         {
-            if (m.Contains(square))
+            if (defendedSquares.Contains(square))
             {
                 return true;
             }

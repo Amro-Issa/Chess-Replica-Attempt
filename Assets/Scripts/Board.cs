@@ -10,7 +10,7 @@ public class Board : MonoBehaviour
     public GameObject whitePiecesParent, blackPiecesParent;
     public GameObject spritesParent;
 
-    public Color lightSquareColor, darkSquareColor, selectColor;
+    public Color lightSquareColor, darkSquareColor, selectionColor;
 
     public PieceTypeSO[] pieceTypeSOArray = new PieceTypeSO[5]; //ORDER MUST BE: pawn,knight,bishop,rook,queen,king
 
@@ -20,10 +20,14 @@ public class Board : MonoBehaviour
     public const string startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"; //in case you lose the string: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
 
     private const int playerCount = 2;
+    
     public const int fileCount = 8;
     public const int rankCount = 8;
     private const int squareCount = fileCount * rankCount;
-    public const int maxSquareNumber = squareCount - 1;
+
+    public const int maxFile = fileCount - 1;
+    public const int maxRank = rankCount - 1;
+    public const int maxSquare = squareCount - 1;
 
     private static List<Piece> WhitePieces
     {
@@ -32,7 +36,6 @@ public class Board : MonoBehaviour
             return GetPieces(Piece.PieceColor.White);
         }
     }
-
     private static List<Piece> BlackPieces
     {
         get
@@ -40,6 +43,7 @@ public class Board : MonoBehaviour
             return GetPieces(Piece.PieceColor.Black);
         }
     }
+
 
     void Start()
     {
@@ -53,13 +57,13 @@ public class Board : MonoBehaviour
         }
 
 
-        for (int i = 1; i < Enum.GetNames(typeof(Piece.PieceType)).Length - 1; i++)
+        for (int i = 0; i < Enum.GetNames(typeof(Piece.PieceType)).Length; i++)
         {
-            PieceTypeToSO.Add((Piece.PieceType)i, pieceTypeSOArray[i - 1]);
+            PieceTypeToSO.Add((Piece.PieceType)i, pieceTypeSOArray[i]);
         }
 
         CreateBoard();
-        //CreatePositionFromFen(startingFen);
+        CreatePositionFromFen(startingFen);
     }
 
     void Update()
@@ -169,7 +173,7 @@ public class Board : MonoBehaviour
 
         MoveManager.playerTurn = Piece.PieceColor.White;
 
-        //fen starts from square 56 for a 8 x 8 board
+        //fen starts from square 56 for a 8x8 board
         int currentSquareNumber = squareCount - fileCount;
 
         foreach(char character in fen)
@@ -185,37 +189,37 @@ public class Board : MonoBehaviour
             }
             else
             {
-                //letter
-                if (char.IsUpper(character))
-                {
-                    //white piece
-                    try
-                    {
-                        CreatePiece(Piece.GetPieceTypeFromLetter(char.ToLower(character)), Piece.PieceColor.White, SquareNumberToSquare[currentSquareNumber]);
-                    }
-                    catch (Exception)
-                    {
-                        print("Error creating position");
-                    }
-                }
-                else
-                {
-                    //black piece
-                    try
-                    {
-                        CreatePiece(Piece.GetPieceTypeFromLetter(character), Piece.PieceColor.Black, SquareNumberToSquare[currentSquareNumber]);
-                    }
-                    catch (Exception)
-                    {
-                        print("Error creating position");
-                    }
-                }
+                Piece.PieceColor color = char.IsUpper(character) ? Piece.PieceColor.White : Piece.PieceColor.Black;
+                Square square = SquareNumberToSquare[currentSquareNumber];
 
+                switch (Piece.GetPieceTypeFromLetter(char.ToLower(character)))
+                { 
+                    case Piece.PieceType.Pawn:
+                        new Pawn(color, square);
+                        break;
+                    case Piece.PieceType.Knight:
+                        new Knight(color, square);
+                        break;
+                    case Piece.PieceType.Bishop:
+                        new Bishop(color, square);
+                        break;
+                    case Piece.PieceType.Rook:
+                        new Rook(color, square);
+                        break;
+                    case Piece.PieceType.Queen:
+                        new Queen(color, square);
+                        break;
+                    case Piece.PieceType.King:
+                        new King(color, square);
+                        break;
+                    default:
+                        throw new Exception();
+                }
+                
                 currentSquareNumber++;
             }
         }
     }
-
     private static string GenerateRandomStartingFen()
     {
         string fen = "";
@@ -230,16 +234,15 @@ public class Board : MonoBehaviour
                 if (i == 0) fen += character;
                 else fen += char.ToUpper(character);
 
-                if (j == 7) fen += '/';
+                if (j == fileCount) fen += '/';
             }
 
-            if (i == 0) fen += "/8/8/8/8/";
+            if (i == 0) fen += $"/{fileCount}/{fileCount}/{fileCount}/{fileCount}/";
         }
 
         //print("The random fen produced is: " + finalFEN);
         return fen;
     }
-
     public static bool IsFenValid(string fen)
     {
         string pieceLetters = "pnbrqk";
@@ -283,6 +286,7 @@ public class Board : MonoBehaviour
         return overallCounter == squareCount;
     }
 
+
     /// <summary>
     /// Gets the first instance of the passed in piece type
     /// </summary>
@@ -291,7 +295,7 @@ public class Board : MonoBehaviour
     {
         foreach(Square square in SquareNumberToSquare.Values)
         {
-            if (square.piece.type == type && square.piece.color == color)
+            if (square.piece?.type == type && square.piece?.color == color)
             {
                 return square.piece;
             }
@@ -299,7 +303,6 @@ public class Board : MonoBehaviour
 
         return null;
     }
-
     /// <summary>
     /// Tries to get the first instance of the passed in piece type, if it couldn't, returns false
     /// </summary>
@@ -308,7 +311,7 @@ public class Board : MonoBehaviour
     {
         foreach (Square square in SquareNumberToSquare.Values)
         {
-            if (square.piece.type == type)
+            if (square.piece.type == type && square.piece.color == color)
             {
                 piece = square.piece;
                 return true;
@@ -318,22 +321,17 @@ public class Board : MonoBehaviour
         piece = null;
         return false;
     }
-
-    public static Piece GetKing(Piece.PieceColor color)
+    public static King GetKing(Piece.PieceColor color)
     {
-        return GetPiece(color, Piece.PieceType.King);
+        return (King)GetPiece(color, Piece.PieceType.King);
     }
-
-    public static List<Piece> GetPieces(Piece.PieceColor color = Piece.PieceColor.Any, Piece.PieceType type = Piece.PieceType.Any)
+    public static List<Piece> GetPieces(Piece.PieceColor? color = null, Piece.PieceType? type = null)
     {
         var pieces = new List<Piece>();
 
         foreach (Square square in SquareNumberToSquare.Values)
         {
-            Piece.PieceColor squareColor = square.piece.color;
-            Piece.PieceType squareType = square.piece.type;
-
-            if ((squareColor == color || squareColor == Piece.PieceColor.Any) && (squareType == type || squareType == Piece.PieceType.Any))
+            if ((color == null || square.piece?.color == color) && (type == null || square.piece?.type == type))
             {
                 pieces.Add(square.piece);
             }

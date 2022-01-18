@@ -124,10 +124,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   squareNumber: 0
   color: {r: 0, g: 0, b: 0, a: 0}
-  pieceOnSquare:
-    type: 0
-    color: 0
-    pieceTypeSO: {fileID: 0}
 --- !u!1 &1560748174074798593
 GameObject:
   m_ObjectHideFlags: 0
