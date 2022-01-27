@@ -60,6 +60,12 @@ public class Square : MonoBehaviour
         piece = newPiece;
     }
 
+    public static string SquareNumberToAlphaNumeric(int squareNum)
+    {
+        char letter = (char)(97 + GetFile(squareNum)); //letter
+        return letter + (GetRank(squareNum) + 1).ToString();
+    }
+
     #region IsSquareInRange
     public static bool IsSquareInRange(int square)
     {

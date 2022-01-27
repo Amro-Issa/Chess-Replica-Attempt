@@ -22,10 +22,7 @@ public class MoveManager : MonoBehaviour
 
     void Start()
     {
-        if (Instance != null)
-        {
-            Destroy(this);
-        }
+        if (Instance != null) Destroy(this);
 
         Instance = this;
     }
@@ -40,9 +37,8 @@ public class MoveManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             ResetSquareHighlighting();
-
             RaycastHit2D hit = Physics2D.Raycast(Utils.GetMouseWorldPosition(), Vector3.zero, 10, Instance.squaresLayer);
-
+            
             if (hit.collider != null)
             {
                 Square squareHit = hit.collider.GetComponent<Square>();
@@ -56,6 +52,7 @@ public class MoveManager : MonoBehaviour
                         selectedPieceLegalMoves = selectedPiece.GetLegalMoves();
 
                         HighlightLegalSquares(squareHit.squareNumber, selectedPieceLegalMoves);
+                        Test.PrintMoves(selectedPieceLegalMoves);
                     }
                     else
                     {

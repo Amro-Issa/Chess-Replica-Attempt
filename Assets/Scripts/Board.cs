@@ -144,7 +144,7 @@ public class Board : MonoBehaviour
 
         foreach (Square squareClass in SquareNumberToSquare.Values)
         {
-            if (squareClass.piece != null && squareClass.piece.gameObj != null)
+            if (squareClass.piece?.gameObj != null)
             {
                 Destroy(squareClass.piece.gameObj);
             }

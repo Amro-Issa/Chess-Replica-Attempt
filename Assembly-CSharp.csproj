@@ -65,7 +65,6 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\Board.cs" />
     <Compile Include="Assets\Scripts\Extentions.cs" />
-    <Compile Include="Assets\Scripts\Move.cs" />
     <Compile Include="Assets\Scripts\MoveManager.cs" />
     <Compile Include="Assets\Scripts\Piece.cs" />
     <Compile Include="Assets\Scripts\PieceTypeSO.cs" />

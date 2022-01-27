@@ -14,4 +14,15 @@ public class Test : MonoBehaviour
     {
         
     }
+
+    public static void PrintMoves(List<int> moves)
+    {
+        List<string> array = new List<string>();
+        foreach (int move in moves)
+        {
+            array.Add(Square.SquareNumberToAlphaNumeric(move));
+        }
+
+        print($"[{string.Join(", ", array)}]");
+    }
 }

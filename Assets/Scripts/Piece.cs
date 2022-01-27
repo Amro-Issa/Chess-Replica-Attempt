@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public abstract class Piece
@@ -40,6 +41,7 @@ public abstract class Piece
 
         square.Occupy(this);
     }
+
 
     public static PieceType GetPieceTypeFromLetter(char letter)
     {
@@ -92,33 +94,14 @@ public abstract class Piece
         var moves = new List<int>();
 
         foreach (Piece piece in Board.GetPieces(color))
-        {
+        {            
             moves.AddRange(piece.GetSquaresDefending());
         }
 
         return moves;
     }
 
-    public bool Equals(Piece piece)
-    {
-        if (type == piece.type && color == piece.color)
-        {
-            return true;
-        }
 
-        return false;
-    }
-
-    /// <summary>
-    /// Gets the moves of the piece as if it is the only piece on the board
-    /// </summary>
-    /// <returns></returns>
-    public List<int> GetRawMoves()
-    {
-        var moves = GetAdvancementMoves();
-        moves.AddRange(GetCaptureMoves());
-        return moves;
-    }
     /// <summary>
     /// Gets the legal moves of the piece, not accounting for whether it is pinned, its king is under check, etc..
     /// If you account for check, but not for pinning, the piece will be able to block check or capture checker even if it is pinned?
@@ -126,44 +109,31 @@ public abstract class Piece
     /// <returns></returns>
     public List<int> GetLegalMoves(bool accountForPinning = true, bool accountForCheck = true)
     {
-        var moves = GetAdvancementMoves();
-        moves.AddRange(GetCaptureMoves());
-        
-        //ORDER HERE IS IMPORTANT. YOU NEED TO GET THE LEGAL MOVES IF THE PIECE IS PINNED THEN ONLY THEN ADJUST FOR CHECK
-        if (accountForPinning && !(this is King))
-        {
-            AdjustMovesForPotentialPinning(ref moves);
-        }
+        var moves = GetRawMoves();
 
-        if (accountForCheck && King.kingPieceUnderCheck?.color == color)
+        //ORDER HERE IS IMPORTANT. YOU NEED TO GET THE LEGAL MOVES IF THE PIECE IS PINNED THEN, ONLY THEN, ADJUST FOR CHECK
+        if (!(this is King))
         {
-            AdjustMovesForCheck(ref moves);
+            if (accountForPinning)
+            {
+                if (IsPinned(out _, out List<int> squaresOfLineOfAttack))
+                {
+                    moves = moves.Intersect(squaresOfLineOfAttack).ToList();
+                }
+            }
+
+            if (accountForCheck && King.kingPieceUnderCheck?.color == color)
+            {
+                AdjustMovesForCheck(ref moves);
+            }
         }
 
         return moves;
     }
-    /// <summary>
-    /// Adjusts the legal moves if the piece is pinned, otherwise, does nothing
-    /// </summary>
-    /// <param name="legalMoves"></param>
-    /// <returns>Whether the piece is pinned or not</returns>
-    public void AdjustMovesForPotentialPinning(ref List<int> legalMoves)
+    
+    public bool IsPinned(out Piece pinner, out List<int> squaresOfLineOfAttack)
     {
-        if (IsPinned(out _, out var squaresOfLineOfAttack))
-        {
-            var adjustedLegalMoves = new List<int>();
-
-            foreach (int square in squaresOfLineOfAttack)
-            {
-                if (legalMoves.Contains(square)) adjustedLegalMoves.Add(square);
-            }
-
-            legalMoves = adjustedLegalMoves;
-        }
-    }
-    public bool IsPinned(out Piece pieceOfPinner, out List<int> squaresOfLineOfAttack)
-    {
-        pieceOfPinner = null;
+        pinner = null;
         squaresOfLineOfAttack = null;
 
         //checking if the king and the piece are reachable and if so, getting the offset
@@ -178,18 +148,22 @@ public abstract class Piece
                 {
                     Piece piece = Board.SquareNumberToSquare[square].piece;
 
-                    if (piece?.color == GetOppositeColor(color))
+                    if (piece == null)
+                    {
+                        continue;
+                    }
+                    else if (piece?.color == GetOppositeColor(color))
                     {
                         if (type == PieceType.Queen || (type == PieceType.Rook && Square.orthogonalOffsets.Contains(direction)) || (type == PieceType.Bishop && Square.diagonalOffsets.Contains(direction)))
                         {
-                            pieceOfPinner = Board.SquareNumberToSquare[square].piece;
+                            pinner = Board.SquareNumberToSquare[square].piece;
                             squaresOfLineOfAttack = Square.GetSquaresInBetween(this.square.squareNumber, square, inclusiveOfSquare2: true);
                             return true;
                         }
 
                         return false;
                     }
-                    else
+                    else if (piece.color == color)
                     {
                         return false;
                     }
@@ -202,9 +176,6 @@ public abstract class Piece
 
     public virtual void Move(Square targetSquare)
     {
-        MoveManager.squareOfChecker = targetSquare;
-        King.kingPieceUnderCheck = null;
-
         hasMoved = true;
         square.Unoccupy(); //unoccupying old square
         square = targetSquare;
@@ -217,11 +188,14 @@ public abstract class Piece
             Pawn.enPassantSquare = null;
         }
 
+        //Checking for check
         King.kingPieceUnderCheck = null;
         if (GetLegalMoves().Contains(Board.GetKing(GetOppositeColor(color)).square.squareNumber))
         {
             MoveManager.squareOfChecker = targetSquare;
             King.kingPieceUnderCheck = Board.GetKing(GetOppositeColor(color));
+
+            Debug.Log($"{color} is under check!");
         }
     }
      
@@ -231,30 +205,17 @@ public abstract class Piece
     /// <param name="legalMoves"></param>
     public virtual void AdjustMovesForCheck(ref List<int> legalMoves)
     {
-        var adjustedLegalMoves = new List<int>();
-
-        King king = Board.GetKing(color);
-        
         //checking for blocking moves or capture
-        if (Square.TryGetSquaresInBetween(king.square.squareNumber, MoveManager.squareOfChecker.squareNumber, out List<int> squaresInBetween, inclusiveOfSquare2: true))
+        if (Square.TryGetSquaresInBetween(King.kingPieceUnderCheck.square.squareNumber, MoveManager.squareOfChecker.squareNumber, out List<int> squaresInBetween, inclusiveOfSquare2: true))
         {
-            foreach (int move in squaresInBetween)
-            {
-                if (legalMoves.Contains(move)) //if the legal moves contain that specific move that blocks the check or captures the checking piece
-                {
-                    adjustedLegalMoves.Add(move);
-                }
-            }
+            legalMoves = legalMoves.Intersect(squaresInBetween).ToList();
         }
-
-        legalMoves = adjustedLegalMoves.Count == 0 ? null : adjustedLegalMoves;
     }
     protected virtual List<int> GetSquaresDefending()
     {
         return GetLegalMoves(false, false);
     }
-    protected abstract List<int> GetAdvancementMoves();
-    protected abstract List<int> GetCaptureMoves(); //make virtual? NO
+    protected abstract List<int> GetRawMoves();
 }
 
 public class Pawn : Piece
@@ -285,31 +246,10 @@ public class Pawn : Piece
         }
     }
 
-    protected override List<int> GetAdvancementMoves()
+    protected override List<int> GetRawMoves()
     {
         var moves = new List<int>();
-
-        Square.Directions offset = color == PieceColor.White ? Square.Directions.Top : Square.Directions.Bottom; //order is important
-
-        int temp = square.squareNumber + (int)offset;
-
-        if (Square.IsSquareInRange(temp) && Square.AreSquaresAdjacent(square.squareNumber, temp))
-        {
-            moves.Add(temp);
-                
-            if (IsDoubleAdvancementAvailable(true))
-            {
-                moves.Add(temp + (int)offset);
-            }
-        }
-
-        return moves;
-    }
-    protected override List<int> GetCaptureMoves()
-    {
-        var moves = new List<int>();
-
-        List<Square.Directions> offsets =  color == PieceColor.White ? Square.whitePawnCaptureOffsets : Square.blackPawnCaptureOffsets; //order is important
+        List<Square.Directions> offsets = color == PieceColor.White ? Square.whitePawnOffsets : Square.blackPawnOffsets; //order is important
 
         foreach (var offset in offsets)
         {
@@ -317,7 +257,13 @@ public class Pawn : Piece
 
             if (Square.IsSquareInRange(temp) && Square.AreSquaresAdjacent(square.squareNumber, temp))
             {
-                if (Board.SquareNumberToSquare[temp].piece?.color == GetOppositeColor(color))
+                if (offset == Square.Directions.Top || offset == Square.Directions.Bottom && Board.SquareNumberToSquare[temp].piece == null)
+                {
+                    moves.Add(temp);
+
+                    if (IsDoubleAdvancementAvailable()) moves.Add(temp + (int)offset);
+                }
+                else if (Board.SquareNumberToSquare[temp].piece?.color == GetOppositeColor(color))
                 {
                     moves.Add(temp);
                 }
@@ -325,10 +271,6 @@ public class Pawn : Piece
         }
 
         return moves;
-    }
-    protected override List<int> GetSquaresDefending()
-    {
-        return GetCaptureMoves();
     }
 
     /// <summary>
@@ -361,6 +303,24 @@ public class Pawn : Piece
     {
         return Math.Abs(destinationSquareNum - originalSquareNum) == Board.fileCount * 2;
     }
+
+    protected override List<int> GetSquaresDefending()
+    {
+        var squares = new List<int>();
+        List<Square.Directions> offsets = color == PieceColor.White ? Square.whitePawnCaptureOffsets : Square.blackPawnCaptureOffsets; //order is important
+
+        foreach (var offset in offsets)
+        {
+            int target = square.squareNumber + (int)offset;
+
+            if (Square.IsSquareInRange(target) && Square.AreSquaresAdjacent(square.squareNumber, target))
+            {
+                squares.Add(target);
+            }
+        }
+
+        return squares;
+    }
 }
 
 public class Knight : Piece
@@ -370,7 +330,7 @@ public class Knight : Piece
 
     }
     
-    protected override List<int> GetAdvancementMoves()
+    protected override List<int> GetRawMoves()
     {
         var moves = new List<int>();
 
@@ -380,26 +340,7 @@ public class Knight : Piece
 
             if (Square.IsSquareInRange(targetSquareNumber) && (Square.GetFileDifference(square.squareNumber, targetSquareNumber) == 1 || Square.GetFileDifference(square.squareNumber, targetSquareNumber) == 2))
             {
-                if (Board.SquareNumberToSquare[targetSquareNumber].piece == null)
-                {
-                    moves.Add(targetSquareNumber);
-                }
-            }
-        }
-
-        return moves;
-    }
-    protected override List<int> GetCaptureMoves()
-    {
-        var moves = new List<int>();
-
-        for (int i = 0; i < Square.knightOffsets.Count; i++)
-        {
-            int targetSquareNumber = square.squareNumber + Square.knightOffsets[i];
-
-            if (Square.IsSquareInRange(targetSquareNumber) && (Square.GetFileDifference(square.squareNumber, targetSquareNumber) == 1 || Square.GetFileDifference(square.squareNumber, targetSquareNumber) == 2))
-            {
-                if (Board.SquareNumberToSquare[targetSquareNumber].piece?.color == GetOppositeColor(color))
+                if (Board.SquareNumberToSquare[targetSquareNumber].piece == null || Board.SquareNumberToSquare[targetSquareNumber].piece?.color == GetOppositeColor(color))
                 {
                     moves.Add(targetSquareNumber);
                 }
@@ -417,29 +358,7 @@ public class Bishop : Piece
             
     }
         
-    protected override List<int> GetAdvancementMoves()
-    {
-        var moves = new List<int>();
-
-        foreach (Square.Directions offset in Square.diagonalOffsets)
-        {
-            int temp = square.squareNumber;
-
-            while (Square.TryGetSquare(temp, offset, out int targetSquare))
-            {
-                if (Board.SquareNumberToSquare[targetSquare].piece != null)
-                {
-                    break;
-                }
-
-                moves.Add(targetSquare);
-                temp = targetSquare;
-            }
-        }
-
-        return moves;
-    }
-    protected override List<int> GetCaptureMoves()
+    protected override List<int> GetRawMoves()
     {
         var moves = new List<int>();
 
@@ -452,12 +371,14 @@ public class Bishop : Piece
                 if (Board.SquareNumberToSquare[targetSquare].piece?.color == GetOppositeColor(color))
                 {
                     moves.Add(targetSquare);
+                    break;
                 }
                 else if (Board.SquareNumberToSquare[targetSquare].piece?.color == color)
                 {
                     break;
                 }
 
+                moves.Add(targetSquare);
                 temp = targetSquare;
             }
         }
@@ -473,29 +394,7 @@ public class Rook : Piece
 
     }
 
-    protected override List<int> GetAdvancementMoves()
-    {
-        var moves = new List<int>();
-
-        foreach (Square.Directions offset in Square.orthogonalOffsets)
-        {
-            int temp = square.squareNumber;
-
-            while (Square.TryGetSquare(temp, offset, out int targetSquare))
-            {
-                if (Board.SquareNumberToSquare[targetSquare].piece != null)
-                {
-                    break;
-                }
-
-                moves.Add(targetSquare);
-                temp = targetSquare;
-            }
-        }
-
-        return moves;
-    }
-    protected override List<int> GetCaptureMoves()
+    protected override List<int> GetRawMoves()
     {
         var moves = new List<int>();
 
@@ -508,12 +407,14 @@ public class Rook : Piece
                 if (Board.SquareNumberToSquare[targetSquare].piece?.color == GetOppositeColor(color))
                 {
                     moves.Add(targetSquare);
+                    break;
                 }
                 else if (Board.SquareNumberToSquare[targetSquare].piece?.color == color)
                 {
                     break;
                 }
 
+                moves.Add(targetSquare);
                 temp = targetSquare;
             }
         }
@@ -529,29 +430,7 @@ public class Queen : Piece
 
     }
 
-    protected override List<int> GetAdvancementMoves()
-    {
-        var moves = new List<int>();
-
-        foreach (Square.Directions offset in Enum.GetValues(typeof(Square.Directions)))
-        {
-            int temp = square.squareNumber;
-
-            while (Square.TryGetSquare(temp, offset, out int targetSquare))
-            {
-                if (Board.SquareNumberToSquare[targetSquare].piece != null)
-                {
-                    break;
-                }
-
-                moves.Add(targetSquare);
-                temp = targetSquare;
-            }
-        }
-
-        return moves;
-    }
-    protected override List<int> GetCaptureMoves()
+    protected override List<int> GetRawMoves()
     {
         var moves = new List<int>();
 
@@ -564,12 +443,14 @@ public class Queen : Piece
                 if (Board.SquareNumberToSquare[targetSquare].piece?.color == GetOppositeColor(color))
                 {
                     moves.Add(targetSquare);
+                    break;
                 }
                 else if (Board.SquareNumberToSquare[targetSquare].piece?.color == color)
                 {
                     break;
                 }
 
+                moves.Add(targetSquare);
                 temp = targetSquare;
             }
         }
@@ -609,39 +490,11 @@ public class King : Piece
 
     }
 
-    protected override List<int> GetAdvancementMoves()
+    protected override List<int> GetRawMoves()
     {
         var moves = new List<int>();
-
-        foreach (int offset in Enum.GetValues(typeof(Square.Directions)))
-        {
-            int targetSquareNumber = square.squareNumber + offset;
-
-            //if square is within board range, squares are adjacent and the target square is not occupied by a friendly piece
-            if (Square.IsSquareInRange(targetSquareNumber) && Square.AreSquaresAdjacent(square.squareNumber, targetSquareNumber) && Board.SquareNumberToSquare[targetSquareNumber].piece == null)
-            {
-                moves.Add(targetSquareNumber);
-            }
-        }
-
+        moves.AddRange(GetAllButCastleMoves());
         moves.AddRange(GetCastleMoves());
-
-        return moves;
-    }
-    protected override List<int> GetCaptureMoves()
-    {
-        var moves = new List<int>();
-
-        foreach (int offset in Enum.GetValues(typeof(Square.Directions)))
-        {
-            int targetSquareNumber = square.squareNumber + offset;
-
-            //if square is within board range, squares are adjacent and the target square is not occupied by a friendly piece
-            if (Square.IsSquareInRange(targetSquareNumber) && Square.AreSquaresAdjacent(square.squareNumber, targetSquareNumber) && Board.SquareNumberToSquare[targetSquareNumber].piece?.color == GetOppositeColor(color))
-            {
-                moves.Add(targetSquareNumber);
-            }
-        }
 
         return moves;
     }
@@ -658,20 +511,6 @@ public class King : Piece
         }
     }
 
-    private List<int> GetCastleMoves()
-    {
-        var moves = new List<int>();
-
-        for (int i = 0; i < 2; i++)
-        {
-            if (IsCastlingAvailable((CastleType)i, out _, out Square kingCastleSquare, out _))
-            {
-                moves.Add(kingCastleSquare.squareNumber);
-            }
-        }
-
-        return moves;
-    }
     private bool IsCastlingAvailable(CastleType castleType, out Rook rook, out Square kingCastleSquare, out Square rookCastleSquare)
     {
         //castleType = square.squareNumber > rook.square.squareNumber ? CastleType.QueenSide : CastleType.KingSide;
@@ -706,6 +545,20 @@ public class King : Piece
 
         return false;
     }
+    private List<int> GetCastleMoves()
+    {
+        var moves = new List<int>();
+
+        for (int i = 0; i < 2; i++)
+        {
+            if (IsCastlingAvailable((CastleType)i, out _, out Square kingCastleSquare, out _))
+            {
+                moves.Add(kingCastleSquare.squareNumber);
+            }
+        }
+
+        return moves;
+    }
     private void Castle(CastleType castleType)
     {
         IsCastlingAvailable(castleType, out Rook rook, out Square kingCastleSquare, out Square rookCastleSquare);
@@ -714,5 +567,32 @@ public class King : Piece
         rook.Move(rookCastleSquare);
 
         //PLAY CASTLE SOUND EFFECT
+    }
+
+    protected override List<int> GetSquaresDefending()
+    {
+        return GetAllButCastleMoves();
+    }
+
+    private List<int> GetAllButCastleMoves()
+    {
+        var moves = new List<int>();
+
+        foreach (int offset in Enum.GetValues(typeof(Square.Directions)))
+        {
+            int targetSquareNumber = square.squareNumber + offset;
+
+            //if square is within board range and squares are adjacent
+            if (Square.IsSquareInRange(targetSquareNumber) && Square.AreSquaresAdjacent(square.squareNumber, targetSquareNumber))
+            {
+                //if target square is not occupied by a friendly piece
+                if (Board.SquareNumberToSquare[targetSquareNumber].piece == null || Board.SquareNumberToSquare[targetSquareNumber].piece.color == GetOppositeColor(color))
+                {
+                    moves.Add(targetSquareNumber);
+                }
+            }
+        }
+
+        return moves;
     }
 }
