@@ -43,6 +43,24 @@ public abstract class Piece
     }
 
 
+    private static int moveNumber;
+    public static int MoveNumber
+    {
+        get => moveNumber;
+        set
+        {
+            if (value == 1)
+            {
+                moveNumber++;
+                Pawn.ResetEnPassant();
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+    }
+
     public static PieceType GetPieceTypeFromLetter(char letter)
     {
         switch (char.Parse(letter.ToString().ToLower()))
@@ -112,20 +130,17 @@ public abstract class Piece
         var moves = GetRawMoves();
 
         //ORDER HERE IS IMPORTANT. YOU NEED TO GET THE LEGAL MOVES IF THE PIECE IS PINNED THEN, ONLY THEN, ADJUST FOR CHECK
-        if (!(this is King))
+        if (accountForPinning && !(this is King))
         {
-            if (accountForPinning)
+            if (IsPinned(out _, out List<int> squaresOfLineOfAttack))
             {
-                if (IsPinned(out _, out List<int> squaresOfLineOfAttack))
-                {
-                    moves = moves.Intersect(squaresOfLineOfAttack).ToList();
-                }
+                moves = moves.Intersect(squaresOfLineOfAttack).ToList();
             }
-
-            if (accountForCheck && King.kingPieceUnderCheck?.color == color)
-            {
-                AdjustMovesForCheck(ref moves);
-            }
+        }
+        
+        if (accountForCheck && MoveManager.CheckAllowed && King.kingPieceUnderCheck?.color == color)
+        {
+            AdjustMovesForCheck(ref moves);
         }
 
         return moves;
@@ -182,12 +197,6 @@ public abstract class Piece
         square.Occupy(this); //occupying new square with this piece
         gameObj.transform.position = targetSquare.transform.position;
 
-        if (Pawn.enPassantPawn?.color != color)
-        {
-            Pawn.enPassantPawn = null;
-            Pawn.enPassantSquare = null;
-        }
-
         //Checking for check
         King.kingPieceUnderCheck = null;
         if (GetLegalMoves().Contains(Board.GetKing(GetOppositeColor(color)).square.squareNumber))
@@ -223,6 +232,12 @@ public class Pawn : Piece
     public static Square enPassantSquare;
     public static Pawn enPassantPawn;
 
+    public static void ResetEnPassant()
+    {
+        enPassantSquare = null;
+        enPassantPawn = null;
+    }
+
     public Pawn(PieceColor color, Square square) : base(PieceType.Pawn, color, square)
     {
 
@@ -230,20 +245,28 @@ public class Pawn : Piece
 
     public override void Move(Square targetSquare)
     {
-        if (IsMoveDoubleAdvancement(square.squareNumber, targetSquare.squareNumber))
+        if (MoveManager.EnPassantAllowed)
         {
-            enPassantSquare = Board.SquareNumberToSquare[(square.squareNumber + targetSquare.squareNumber) / 2];
-            enPassantPawn = this;
+            if (IsMoveDoubleAdvancement(square.squareNumber, targetSquare.squareNumber))
+            {
+                enPassantSquare = Board.SquareNumberToSquare[(square.squareNumber + targetSquare.squareNumber) / 2];
+                enPassantPawn = this;
+            }
+
+            if (targetSquare == enPassantSquare)
+            {
+                MoveManager.PlayCaptureSound();
+                UnityEngine.Object.Destroy(enPassantPawn.gameObj);
+                enPassantPawn.square.Unoccupy();
+            }
+
+            if (enPassantPawn != this)
+            {
+                ResetEnPassant();
+            }
         }
 
         base.Move(targetSquare);
-
-        if (targetSquare == enPassantSquare)
-        {
-            MoveManager.PlayCaptureSound();
-            UnityEngine.Object.Destroy(enPassantPawn.gameObj);
-            enPassantPawn.square.Unoccupy();
-        }
     }
 
     protected override List<int> GetRawMoves()
@@ -263,7 +286,7 @@ public class Pawn : Piece
 
                     if (IsDoubleAdvancementAvailable()) moves.Add(temp + (int)offset);
                 }
-                else if (Board.SquareNumberToSquare[temp].piece?.color == GetOppositeColor(color))
+                else if (Board.SquareNumberToSquare[temp].piece?.color == GetOppositeColor(color) || (Board.SquareNumberToSquare[temp] == enPassantSquare && enPassantPawn.color != color))
                 {
                     moves.Add(temp);
                 }
@@ -478,23 +501,23 @@ public class King : Piece
     {
         var adjustedLegalMoves = new List<int>();
         var defendedSquares = GetAllDefendedSquares(GetOppositeColor(color));
-        int attackOffset = Square.GetOffset(MoveManager.squareOfChecker.squareNumber, square.squareNumber, out _); //need the offset to check if king actually moved out of the attacker's line of sight
 
         foreach (int move in rawLegalMoves)
         {
-            if (!defendedSquares.Contains(move) && Square.GetOffset(MoveManager.squareOfChecker.squareNumber, move, out _) != attackOffset)
+            if (!defendedSquares.Contains(move) && !Square.AreSquaresReachable(MoveManager.squareOfChecker.squareNumber, move))
             {
                 adjustedLegalMoves.Add(move);
             }
         }
 
+        rawLegalMoves = adjustedLegalMoves;
     }
 
     protected override List<int> GetRawMoves()
     {
         var moves = new List<int>();
         moves.AddRange(GetAllButCastleMoves());
-        moves.AddRange(GetCastleMoves());
+        if (MoveManager.CastleAllowed) moves.AddRange(GetCastleMoves());
 
         return moves;
     }

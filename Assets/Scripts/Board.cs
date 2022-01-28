@@ -80,7 +80,8 @@ public class Board : MonoBehaviour
         {
             CreatePositionFromFen(GenerateRandomStartingFen());
         }
-        else if (Input.GetKeyDown(KeyCode.E)) //Generate with the specified exceptions
+        #region
+        /*else if (Input.GetKeyDown(KeyCode.E)) //Generate with the specified exceptions
         {
             ClearBoard();
 
@@ -115,9 +116,10 @@ public class Board : MonoBehaviour
                 break;
             }
             EndOfLoop:;
-        }
+        }*/
+        #endregion
     }
-    
+
     private static void CreateBoard()
     {
         if (SquareNumberToSquare.Count != 0)
@@ -228,19 +230,22 @@ public class Board : MonoBehaviour
         {
             for (int j = 0; j < fileCount * 2; j++)
             {
+                if (j == fileCount)
+                {
+                    fen += '/';
+                }
+
                 int randomIndex = UnityEngine.Random.Range(0, 6);
                 char character = "pnbrqk"[randomIndex];
 
                 if (i == 0) fen += character;
                 else fen += char.ToUpper(character);
-
-                if (j == fileCount) fen += '/';
             }
 
             if (i == 0) fen += $"/{fileCount}/{fileCount}/{fileCount}/{fileCount}/";
         }
 
-        //print("The random fen produced is: " + finalFEN);
+        //print("The random fen produced is: " + fen);
         return fen;
     }
     public static bool IsFenValid(string fen)
