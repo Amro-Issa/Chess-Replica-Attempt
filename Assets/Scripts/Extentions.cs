@@ -25,4 +25,3 @@ public static class Extentions
         return Square.verticalOffsets.Contains(offset);
     }
 }
-

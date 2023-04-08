@@ -43,26 +43,16 @@ public class MoveManager : MonoBehaviour
             {
                 Square squareHit = hit.collider.GetComponent<Square>();
 
-                if (!pieceSelected) //piece selection
+                if (squareHit.piece?.color == color)
                 {
-                    if (squareHit.piece?.color == color)
-                    {
-                        pieceSelected = true;
-                        selectedPiece = squareHit.piece;
-                        selectedPieceLegalMoves = selectedPiece.GetLegalMoves();
+                    pieceSelected = true;
+                    selectedPiece = squareHit.piece;
+                    selectedPieceLegalMoves = selectedPiece.GetLegalMoves();
 
-                        HighlightLegalSquares(squareHit.squareNumber, selectedPieceLegalMoves);
-                        Test.PrintMoves(selectedPieceLegalMoves);
-                    }
-                    else
-                    {
-                        pieceSelected = false;
-                        selectedPiece = null;
-                        selectedPieceLegalMoves = null;
-                        ResetSquareHighlighting();
-                    }
+                    HighlightLegalSquares(squareHit.squareNumber, selectedPieceLegalMoves);
+                    //Test.PrintMoves(selectedPieceLegalMoves);
                 }
-                else //checking for move play
+                else if (pieceSelected) //checking for move play
                 {
                     if (selectedPiece.GetLegalMoves().Contains(squareHit.squareNumber)) //seeing if the destination square is a legal square that the piece can move to
                     {
@@ -143,19 +133,19 @@ public class MoveManager : MonoBehaviour
     //not really highlighting, just "drawing" a point over the square
     public static void HighlightLegalSquares(int selectedSquare, List<int> legalMoves)
     {
-        Board.SquareNumberToSquare[selectedSquare].GetComponent<SpriteRenderer>().color = Board.Instance.selectionColor;
+        Board.Squares[selectedSquare].GetComponent<SpriteRenderer>().color = Board.Instance.selectionSquareColor;
 
         if (legalMoves != null)
         {
             foreach (int move in legalMoves)
             {
-                Board.SquareNumberToSquare[move].transform.GetChild(0).gameObject.SetActive(true);
+                Board.Squares[move].transform.GetChild(0).gameObject.SetActive(true);
             }
         }
     }
     public static void ResetSquareHighlighting()
     {
-        foreach (Square square in Board.SquareNumberToSquare.Values)
+        foreach (Square square in Board.Squares.Values)
         {
             square.GetComponent<SpriteRenderer>().color = square.color;
             square.transform.GetChild(0).gameObject.SetActive(false);

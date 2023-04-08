@@ -10,24 +10,25 @@ public class Board : MonoBehaviour
     public GameObject whitePiecesParent, blackPiecesParent;
     public GameObject spritesParent;
 
-    public Color lightSquareColor, darkSquareColor, selectionColor;
+    public Color lightSquareColor, darkSquareColor, selectionSquareColor;
 
     public PieceTypeSO[] pieceTypeSOArray = new PieceTypeSO[5]; //ORDER MUST BE: pawn,knight,bishop,rook,queen,king
 
     public static Dictionary<Piece.PieceType, PieceTypeSO> PieceTypeToSO = new Dictionary<Piece.PieceType, PieceTypeSO>();
-    public static Dictionary<int, Square> SquareNumberToSquare = new Dictionary<int, Square>();
+    public static Dictionary<int, Square> Squares = new Dictionary<int, Square>();
 
-    public const string startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"; //in case you lose the string: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
+    public const string StartingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"; //in case you lose the string: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
 
-    private const int playerCount = 2;
+    private const int PlayerCount = 2;
     
-    public const int fileCount = 8;
-    public const int rankCount = 8;
-    private const int squareCount = fileCount * rankCount;
+    public const int FileCount = 8;
+    public const int RankCount = 8;
+    private const int SquareCount = FileCount * RankCount;
 
-    public const int maxFile = fileCount - 1;
-    public const int maxRank = rankCount - 1;
-    public const int maxSquare = squareCount - 1;
+    public const int MaxFile = FileCount - 1;
+    public const int MaxRank = RankCount - 1;
+    public const int MaxSquare = SquareCount - 1;
+    private const string PieceLetters = "pnbrqk";
 
     private static List<Piece> WhitePieces
     {
@@ -63,7 +64,7 @@ public class Board : MonoBehaviour
         }
 
         CreateBoard();
-        CreatePositionFromFen(startingFen);
+        CreatePositionFromFen(StartingFen);
     }
 
     void Update()
@@ -74,13 +75,13 @@ public class Board : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.S)) //starting pos
         {
-            CreatePositionFromFen(startingFen);
+            CreatePositionFromFen(StartingFen);
         }
         else if (Input.GetKeyDown(KeyCode.R)) //random pos
         {
             CreatePositionFromFen(GenerateRandomStartingFen());
         }
-        #region
+        #region delete?
         /*else if (Input.GetKeyDown(KeyCode.E)) //Generate with the specified exceptions
         {
             ClearBoard();
@@ -120,41 +121,6 @@ public class Board : MonoBehaviour
         #endregion
     }
 
-    private static void CreateBoard()
-    {
-        if (SquareNumberToSquare.Count != 0)
-        {
-            SquareNumberToSquare.Clear();
-        }
-
-        for (int rank = 0; rank < rankCount; rank++) //file = column
-        {
-            for (int column = 0; column < fileCount; column++) //rank = row
-            {
-                Vector2 spawnPos = new Vector2(column, rank);
-                Color squareColor = (column + rank) % 2 == 0 ? Instance.darkSquareColor : Instance.lightSquareColor; //if (column + rank) is even, that means that square is black, otherwise it is white
-                int squareNumber = (rank * fileCount) + column;
-                
-                CreateSquare(spawnPos, squareColor, squareNumber);
-            }
-        }
-    }
-    
-    private static void ClearBoard()
-    {
-        MoveManager.ResetFields();
-
-        foreach (Square squareClass in SquareNumberToSquare.Values)
-        {
-            if (squareClass.piece?.gameObj != null)
-            {
-                Destroy(squareClass.piece.gameObj);
-            }
-
-            squareClass.Unoccupy();
-        }
-    }
-
     private static void CreateSquare(Vector2 position, Color squareColor, int squareNumber)
     {
         GameObject squareObject = Instantiate(Instance.squarePrefab, position, Quaternion.identity, Instance.squaresParent.transform);
@@ -166,7 +132,42 @@ public class Board : MonoBehaviour
         squareClass.squareNumber = squareNumber;
         squareClass.color = squareColor;
 
-        SquareNumberToSquare.Add(squareNumber, squareClass);
+        Squares.Add(squareNumber, squareClass);
+    }
+    
+    private static void CreateBoard()
+    {
+        if (Squares.Count != 0)
+        {
+            Squares.Clear();
+        }
+
+        for (int rank = 0; rank < RankCount; rank++) //file = column
+        {
+            for (int column = 0; column < FileCount; column++) //rank = row
+            {
+                Vector2 spawnPos = new Vector2(column, rank);
+                Color squareColor = (column + rank) % 2 == 0 ? Instance.darkSquareColor : Instance.lightSquareColor; //if (column + rank) is even, that means that square is black, otherwise it is white
+                int squareNumber = (rank * FileCount) + column;
+                
+                CreateSquare(spawnPos, squareColor, squareNumber);
+            }
+        }
+    }
+
+    private static void ClearBoard()
+    {
+        MoveManager.ResetFields();
+
+        foreach (Square squareClass in Squares.Values)
+        {
+            if (squareClass.piece?.gameObj != null)
+            {
+                Destroy(squareClass.piece.gameObj);
+            }
+
+            squareClass.Unoccupy();
+        }
     }
 
     public static void CreatePositionFromFen(string fen)
@@ -176,14 +177,14 @@ public class Board : MonoBehaviour
         MoveManager.playerTurn = Piece.PieceColor.White;
 
         //fen starts from square 56 for a 8x8 board
-        int currentSquareNumber = squareCount - fileCount;
+        int currentSquareNumber = SquareCount - FileCount;
 
         foreach(char character in fen)
         {
             if (character == '/')
             {
                 //next rank
-                currentSquareNumber -= fileCount * 2;
+                currentSquareNumber -= FileCount * 2;
             }
             else if (int.TryParse(character.ToString(), out int number))
             {
@@ -191,8 +192,8 @@ public class Board : MonoBehaviour
             }
             else
             {
-                Piece.PieceColor color = char.IsUpper(character) ? Piece.PieceColor.White : Piece.PieceColor.Black;
-                Square square = SquareNumberToSquare[currentSquareNumber];
+                Piece.PieceColor color = char.IsUpper(character) ? Piece.PieceColor.White : Piece.PieceColor.Black; //white is uppercase, black is lowercase
+                Square square = Squares[currentSquareNumber];
 
                 switch (Piece.GetPieceTypeFromLetter(char.ToLower(character)))
                 { 
@@ -226,23 +227,23 @@ public class Board : MonoBehaviour
     {
         string fen = "";
 
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 2; i++) //looping twice, once for each color
         {
-            for (int j = 0; j < fileCount * 2; j++)
+            for (int j = 0; j < FileCount * 2; j++) //looping the number of pieces to put on the board (16 times for a board with 8 files)
             {
-                if (j == fileCount)
+                if (j == FileCount)
                 {
                     fen += '/';
                 }
 
                 int randomIndex = UnityEngine.Random.Range(0, 6);
-                char character = "pnbrqk"[randomIndex];
+                char character = PieceLetters[randomIndex];
 
                 if (i == 0) fen += character;
                 else fen += char.ToUpper(character);
             }
 
-            if (i == 0) fen += $"/{fileCount}/{fileCount}/{fileCount}/{fileCount}/";
+            if (i == 0) fen += $"/{FileCount}/{FileCount}/{FileCount}/{FileCount}/";
         }
 
         //print("The random fen produced is: " + fen);
@@ -250,21 +251,19 @@ public class Board : MonoBehaviour
     }
     public static bool IsFenValid(string fen)
     {
-        string pieceLetters = "pnbrqk";
-
         int overallCounter = 0;
         int counter = 0;
         
         foreach (char character in fen)
         {
-            if ((counter >= fileCount && character != '/') || (counter < fileCount && character == '/'))
+            if ((counter >= FileCount && character != '/') || (counter < FileCount && character == '/'))
             {
                 return false;
             }
 
-            if (!pieceLetters.Contains(character.ToString().ToLower()))
+            if (!PieceLetters.Contains(character.ToString().ToLower()))
             {
-                if (!int.TryParse(character.ToString(), out int parsedCharacter) || parsedCharacter <= 0 || parsedCharacter > fileCount)
+                if (!int.TryParse(character.ToString(), out int parsedCharacter) || parsedCharacter <= 0 || parsedCharacter > FileCount) //checks if character is an integer, if it is, checks if it is between 0 (inclusive) and filecount, and if it's not, it's invalid
                 {
                     if (character != '/')
                     {
@@ -288,9 +287,17 @@ public class Board : MonoBehaviour
             }
         }
 
-        return overallCounter == squareCount;
+        return overallCounter == SquareCount;
     }
 
+    public static bool IsSquareOccupied(int squareNum)
+    {
+        return Squares[squareNum].piece != null;
+    }
+    public static bool IsSquareOccupied(int squareNum, Piece.PieceColor occupantColor)
+    {
+        return Squares[squareNum].piece?.color == occupantColor;
+    }
 
     /// <summary>
     /// Gets the first instance of the passed in piece type
@@ -298,7 +305,7 @@ public class Board : MonoBehaviour
     /// <returns></returns>
     public static Piece GetPiece(Piece.PieceColor color, Piece.PieceType type)
     {
-        foreach(Square square in SquareNumberToSquare.Values)
+        foreach(Square square in Squares.Values)
         {
             if (square.piece?.type == type && square.piece?.color == color)
             {
@@ -314,7 +321,7 @@ public class Board : MonoBehaviour
     /// <returns></returns>
     public static bool TryGetPiece(Piece.PieceColor color, Piece.PieceType type, out Piece piece)
     {
-        foreach (Square square in SquareNumberToSquare.Values)
+        foreach (Square square in Squares.Values)
         {
             if (square.piece.type == type && square.piece.color == color)
             {
@@ -334,7 +341,7 @@ public class Board : MonoBehaviour
     {
         var pieces = new List<Piece>();
 
-        foreach (Square square in SquareNumberToSquare.Values)
+        foreach (Square square in Squares.Values)
         {
             if ((color == null || square.piece?.color == color) && (type == null || square.piece?.type == type))
             {
