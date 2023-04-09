@@ -73,7 +73,7 @@ public class Board : MonoBehaviour
         {
             ClearBoard();
         }
-        else if (Input.GetKeyDown(KeyCode.S)) //starting pos
+        else if (Input.GetKeyDown(KeyCode.D)) //starting pos
         {
             CreatePositionFromFen(StartingFen);
         }
@@ -173,6 +173,7 @@ public class Board : MonoBehaviour
     public static void CreatePositionFromFen(string fen)
     {
         ClearBoard();
+        MoveManager.ResetSelection();
 
         MoveManager.playerTurn = Piece.PieceColor.White;
 

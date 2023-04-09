@@ -106,12 +106,12 @@ public abstract class Piece
     /// If you account for check, but not for pinning, the piece will be able to block check or capture checker even if it is pinned?
     /// </summary>
     /// <returns></returns>
-    public List<int> GetLegalMoves(bool accountForPinning = true, bool accountForCheck = true)
+    public List<int> GetLegalMoves(bool accountForPin = true, bool accountForCheck = true)
     {
         var moves = GetRawMoves();
-
+            
         //ORDER HERE IS IMPORTANT. YOU NEED TO GET THE LEGAL MOVES IF THE PIECE IS PINNED, THEN, AND ONLY THEN, ADJUST FOR CHECK
-        if (accountForPinning && !(this is King))
+        if (accountForPin && !(this is King))
         {
             if (IsPinned(out _, out List<int> squaresOfLineOfAttack))
             {
@@ -119,7 +119,7 @@ public abstract class Piece
             }
         }
         
-        if (MoveManager.CheckAllowed && accountForCheck && King.kingPieceUnderCheck?.color == color)
+        if (accountForCheck && MoveManager.CheckAllowed && King.kingPieceUnderCheck?.color == color) //King.kingPieceUnderCheck? -- the question mark is so that the condition is only evaluated if the field is not null
         {
             AdjustMovesForCheck(ref moves);
         }
@@ -544,9 +544,9 @@ public class King : Piece
         kingCastleSquare = null;
         rookCastleSquare = null;
 
-        if (!hasMoved)
+        if (!hasMoved && kingPieceUnderCheck != this)
         {
-            rook = Board.Squares[square.squareNumber + (castleType == CastleType.QueenSide ? -4 : 3)].piece is Rook r ? r : null;
+            rook = (Board.Squares[square.squareNumber + (castleType == CastleType.QueenSide ? -4 : 3)].piece is Rook r) ? r : null;
 
             if ((bool)!rook?.hasMoved)
             {

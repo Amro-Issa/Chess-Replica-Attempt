@@ -91,10 +91,7 @@ public class MoveManager : MonoBehaviour
                         #endregion
                     }
 
-                    pieceSelected = false;
-                    selectedPiece = null;
-                    selectedPieceLegalMoves = null;
-                    ResetSquareHighlighting();
+                    ResetSelection();
                 }
                 
             }
@@ -150,6 +147,13 @@ public class MoveManager : MonoBehaviour
             square.GetComponent<SpriteRenderer>().color = square.color;
             square.transform.GetChild(0).gameObject.SetActive(false);
         }
+    }
+    public static void ResetSelection()
+    {
+        pieceSelected = false;
+        selectedPiece = null;
+        selectedPieceLegalMoves = null;
+        ResetSquareHighlighting();
     }
 
     public static void ResetFields()

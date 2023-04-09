@@ -4090,7 +4090,7 @@ MonoBehaviour:
     m_LineSpacing: 1
   m_Text: '- Press ''C'' to clear board
 
-    - Press ''S'' to generate default starting
+    - Press ''D'' to generate default starting
     position
 
     - Press ''R'' to generate random starting position
@@ -4896,7 +4896,7 @@ MonoBehaviour:
   spritesParent: {fileID: 949552092}
   lightSquareColor: {r: 0.94509804, g: 0.8509804, b: 0.7529412, a: 1}
   darkSquareColor: {r: 0.6627451, g: 0.47843137, b: 0.39607844, a: 1}
-  selectionColor: {r: 1, g: 0, b: 0, a: 1}
+  selectionSquareColor: {r: 0, g: 0, b: 0, a: 0}
   pieceTypeSOArray:
   - {fileID: 11400000, guid: 0f7bedd0201cc7541a2199ed7ef2b17d, type: 2}
   - {fileID: 11400000, guid: fc3f35beb6499cf4dadce3aa61e76e5d, type: 2}

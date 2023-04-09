@@ -56,6 +56,7 @@ public class UI : MonoBehaviour
     {
         if (currentFenInputFieldValue != null && Board.IsFenValid(currentFenInputFieldValue))
         {
+            MoveManager.ResetSelection();
             Board.CreatePositionFromFen(currentFenInputFieldValue);
         }
         else
