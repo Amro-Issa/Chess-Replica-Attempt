@@ -34,10 +34,10 @@ public class Square : MonoBehaviour
     }
 
     #region Offsets
-    public static readonly List<Directions> horizontalOffsets = new List<Directions> { Directions.Left, Directions.Right };
-    public static readonly List<Directions> verticalOffsets = new List<Directions> { Directions.Top, Directions.Bottom };
-    public static readonly List<Directions> orthogonalOffsets = new List<Directions> { Directions.Left, Directions.Right, Directions.Top, Directions.Bottom };
-    public static readonly List<Directions> diagonalOffsets = new List<Directions> { Directions.TopLeft, Directions.TopRight, Directions.BottomLeft, Directions.BottomRight };
+    public static readonly List<Directions> HorizontalOffsets = new List<Directions> { Directions.Left, Directions.Right };
+    public static readonly List<Directions> VerticalOffsets = new List<Directions> { Directions.Top, Directions.Bottom };
+    public static readonly List<Directions> OrthogonalOffsets = new List<Directions> { Directions.Left, Directions.Right, Directions.Top, Directions.Bottom };
+    public static readonly List<Directions> DiagonalOffsets = new List<Directions> { Directions.TopLeft, Directions.TopRight, Directions.BottomLeft, Directions.BottomRight };
 
     #region PawnOffsets
     public static readonly List<Directions> whitePawnOffsets = new List<Directions> { Directions.TopLeft, Directions.Top, Directions.TopRight };

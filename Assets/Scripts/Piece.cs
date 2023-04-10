@@ -150,7 +150,7 @@ public abstract class Piece
                     }
                     else if (piece?.color == GetOppositeColor(color))
                     {
-                        if (type == PieceType.Queen || (type == PieceType.Rook && Square.orthogonalOffsets.Contains(direction)) || (type == PieceType.Bishop && Square.diagonalOffsets.Contains(direction)))
+                        if (type == PieceType.Queen || (type == PieceType.Rook && Square.OrthogonalOffsets.Contains(direction)) || (type == PieceType.Bishop && Square.DiagonalOffsets.Contains(direction)))
                         {
                             pinner = Board.Squares[square].piece;
                             squaresOfLineOfAttack = Square.GetSquaresInBetween(this.square.squareNumber, square, inclusiveOfSquare2: true);
@@ -187,6 +187,11 @@ public abstract class Piece
 
             Debug.Log($"{color} is under check!");
         }
+
+        if (Pawn.enPassantPawn?.color == GetOppositeColor(color))
+        {
+            Pawn.ResetEnPassant();
+        }
     }
      
     /// <summary>
@@ -210,24 +215,6 @@ public abstract class Piece
 
 public class Pawn : Piece
 {
-    private static int enPassantElapsedMoves;
-    public static int EnPassantElapsedMoves
-    {
-        get => enPassantElapsedMoves;
-        set
-        {
-            if (value == 1)
-            {
-                enPassantElapsedMoves++;
-                ResetEnPassant();
-            }
-            else
-            {
-                throw new Exception();
-            }
-        }
-    }
-
     public static Square enPassantSquare;
     public static Pawn enPassantPawn;
 
@@ -251,17 +238,12 @@ public class Pawn : Piece
                 enPassantSquare = Board.Squares[(square.squareNumber + targetSquare.squareNumber) / 2];
                 enPassantPawn = this;
             }
-
-            if (targetSquare == enPassantSquare)
+            else if (targetSquare == enPassantSquare)
             {
+                //capturing by en passant
                 MoveManager.PlayCaptureSound();
                 UnityEngine.Object.Destroy(enPassantPawn.gameObj);
                 enPassantPawn.square.Unoccupy();
-            }
-
-            if (enPassantPawn != this)
-            {
-                ResetEnPassant();
             }
         }
 
@@ -271,23 +253,24 @@ public class Pawn : Piece
     protected override List<int> GetRawMoves()
     {
         var moves = new List<int>();
-        List<Square.Directions> offsets = color == PieceColor.White ? Square.whitePawnOffsets : Square.blackPawnOffsets; //order is important
+        List<Square.Directions> offsets = (color == PieceColor.White) ? Square.whitePawnOffsets : Square.blackPawnOffsets; //order is important
 
         foreach (var offset in offsets)
         {
-            int temp = square.squareNumber + (int)offset;
+            int num = square.squareNumber + (int)offset;
 
-            if (Square.IsSquareInRange(temp) && Square.AreSquaresAdjacent(square.squareNumber, temp))
+            //checking if the square is actually on the board (in bound)
+            if (Square.IsSquareInRange(num) && Square.AreSquaresAdjacent(square.squareNumber, num))
             {
-                if (offset == Square.Directions.Top || offset == Square.Directions.Bottom && Board.Squares[temp].piece == null)
+                if (Square.VerticalOffsets.Contains(offset) && Board.Squares[num].piece == null)
                 {
-                    moves.Add(temp);
+                    moves.Add(num);
 
-                    if (IsDoubleAdvancementAvailable()) moves.Add(temp + (int)offset);
+                    if (IsDoubleAdvancementAvailable()) moves.Add(num + (int)offset);
                 }
-                else if (Board.Squares[temp].piece?.color == GetOppositeColor(color) || (Board.Squares[temp] == enPassantSquare && enPassantPawn.color != color))
+                else if (Square.DiagonalOffsets.Contains(offset) && Board.Squares[num].piece?.color == GetOppositeColor(color) || (Board.Squares[num] == enPassantSquare && enPassantPawn.color == GetOppositeColor(color)))
                 {
-                    moves.Add(temp);
+                    moves.Add(num);
                 }
             }
         }
@@ -387,7 +370,7 @@ public class Bishop : Piece
     {
         var moves = new List<int>();
 
-        foreach (Square.Directions offset in Square.diagonalOffsets)
+        foreach (Square.Directions offset in Square.DiagonalOffsets)
         {
             int temp = square.squareNumber;
 
@@ -423,7 +406,7 @@ public class Rook : Piece
     {
         var moves = new List<int>();
 
-        foreach (Square.Directions offset in Square.orthogonalOffsets)
+        foreach (Square.Directions offset in Square.OrthogonalOffsets)
         {
             int temp = square.squareNumber;
 

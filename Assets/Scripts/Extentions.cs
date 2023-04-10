@@ -12,16 +12,16 @@ public static class Extentions
 
     public static bool IsDiagonalOffset(this Square.Directions offset)
     {
-        return Square.diagonalOffsets.Contains(offset);
+        return Square.DiagonalOffsets.Contains(offset);
     }
 
     public static bool IsHorizontalOffset(this Square.Directions offset)
     {
-        return Square.horizontalOffsets.Contains(offset);
+        return Square.HorizontalOffsets.Contains(offset);
     }
 
     public static bool IsVerticalOffset(this Square.Directions offset)
     {
-        return Square.verticalOffsets.Contains(offset);
+        return Square.VerticalOffsets.Contains(offset);
     }
 }
