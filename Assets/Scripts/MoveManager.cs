@@ -16,6 +16,7 @@ public class MoveManager : MonoBehaviour
     public static bool CastleAllowed { get; set; } = true;
     public static bool CheckAllowed { get; set; } = true;
     public static bool EnPassantAllowed { get; set; } = true;
+    public static bool GameOver { get; set; } = false;
 
     [SerializeField] private LayerMask squaresLayer;
     [SerializeField] private GameObject audioSources;
@@ -168,5 +169,11 @@ public class MoveManager : MonoBehaviour
         selectedPiece = null;
         selectedPieceLegalMoves = null;
         squareOfChecker = null;
+
+        CastleAllowed = true;
+        CheckAllowed = true;
+        EnPassantAllowed = true;
+
+        GameOver = false;
     }
 }

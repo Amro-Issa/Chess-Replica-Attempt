@@ -74,4 +74,12 @@ public class UI : MonoBehaviour
         MoveManager.CheckAllowed = RulesToggles[1].isOn;
         MoveManager.EnPassantAllowed = RulesToggles[2].isOn;
     }
+
+    public void Reset()
+    {
+        for (int i = 0; i < Instance.RulesToggles.Length; i++)
+        {
+            Instance.RulesToggles[i].isOn = true;
+        }
+    }
 }

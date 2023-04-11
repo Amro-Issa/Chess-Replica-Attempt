@@ -158,6 +158,7 @@ public class Board : MonoBehaviour
     private static void ClearBoard()
     {
         MoveManager.ResetFields();
+        UI.Instance?.Reset();
 
         foreach (Square squareClass in Squares.Values)
         {

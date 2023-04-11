@@ -86,7 +86,7 @@ public abstract class Piece
             moves.AddRange(piece.GetLegalMoves());
         }
 
-        return moves.Count == 0 ? null : moves;
+        return moves.Count == 0 ? null : moves;  //make it so that the method returns an empty list instead of <null> if there are no legal moves for any piece of color <color>
     }
     public static List<int> GetAllDefendedSquares(PieceColor color)
     {
@@ -185,7 +185,15 @@ public abstract class Piece
             MoveManager.squareOfChecker = targetSquare;
             King.kingPieceUnderCheck = Board.GetKing(GetOppositeColor(color));
 
-            Debug.Log($"{color} is under check!");
+            if (GetAllLegalMoves(GetOppositeColor(color)) == null)
+            {
+                MoveManager.GameOver = true;
+                Debug.Log($"{color} checkmated {GetOppositeColor(color)}. Game Over!");
+            }
+            else
+            {
+                Debug.Log($"{GetOppositeColor(color)} is under check!");
+            }
         }
 
         if (Pawn.enPassantPawn?.color == GetOppositeColor(color))
