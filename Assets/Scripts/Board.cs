@@ -157,6 +157,7 @@ public class Board : MonoBehaviour
 
     private static void ClearBoard()
     {
+        MoveManager.ResetSelection();
         MoveManager.ResetFields();
         UI.Instance?.Reset();
 
@@ -174,7 +175,6 @@ public class Board : MonoBehaviour
     public static void CreatePositionFromFen(string fen)
     {
         ClearBoard();
-        MoveManager.ResetSelection();
 
         MoveManager.playerTurn = Piece.PieceColor.White;
 
