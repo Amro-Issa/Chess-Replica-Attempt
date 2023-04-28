@@ -231,21 +231,34 @@ public class Board : MonoBehaviour
 
         for (int i = 0; i < 2; i++) //looping twice, once for each color
         {
+            bool kingGenerated = false;
+
             for (int j = 0; j < FileCount * 2; j++) //looping the number of pieces to put on the board (16 times for a board with 8 files)
             {
                 if (j == FileCount)
                 {
+                    //next row
                     fen += '/';
                 }
 
-                int randomIndex = UnityEngine.Random.Range(0, 6);
-                char character = PieceLetters[randomIndex];
+                //excluding king piece if one has already been generated
+                int randomIndex = kingGenerated ? UnityEngine.Random.Range(0, PieceLetters.Length - 1) : UnityEngine.Random.Range(0, PieceLetters.Length);
 
-                if (i == 0) fen += character;
-                else fen += char.ToUpper(character);
+                if (PieceLetters[randomIndex] == 'k') kingGenerated = true;
+
+                char character = i == 0 ? PieceLetters[randomIndex] : char.ToUpper(PieceLetters[randomIndex]);
+                fen += character;
             }
 
-            if (i == 0) fen += $"/{FileCount}/{FileCount}/{FileCount}/{FileCount}/";
+            //setting up generation location of other color
+            if (i == 0)
+            {
+                for (int k = 0; k < 4; k++)
+                {
+                    fen += $"/{FileCount}";
+                }
+                fen += "/";
+            }
         }
 
         //print("The random fen produced is: " + fen);
