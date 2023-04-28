@@ -1,4 +1,4 @@
-# Chess-Replica
+# Chess
 My attempt at creating chess in the Unity game engine using C#
 
 Inspired by Sebastian Lague's Chess AI project.
