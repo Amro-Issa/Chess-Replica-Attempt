@@ -40,7 +40,7 @@ public class MoveManager : MonoBehaviour
             ResetSquareHighlighting();
             RaycastHit2D hit = Physics2D.Raycast(Utils.GetMouseWorldPosition(), Vector3.zero, 10, Instance.squaresLayer);
             
-            if (hit.collider != null)
+            if (hit.collider != null) //if we actually hit something
             {
                 Square squareHit = hit.collider.GetComponent<Square>();
 
@@ -51,7 +51,7 @@ public class MoveManager : MonoBehaviour
                     selectedPieceLegalMoves = selectedPiece.GetLegalMoves();
 
                     HighlightLegalSquares(squareHit.squareNumber, selectedPieceLegalMoves);
-                    //Test.PrintMoves(selectedPieceLegalMoves);
+                    UI.UpdateLegalMovesDisplay(selectedPieceLegalMoves);
                 }
                 else if (pieceSelected) //checking for move play
                 {

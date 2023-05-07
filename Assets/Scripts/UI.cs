@@ -13,6 +13,7 @@ public class UI : MonoBehaviour
     [SerializeField] private GameObject RandomPositionSettingsGameObject;
     [SerializeField] private Toggle[] CheckmarkToggles;
     [SerializeField] private Toggle[] RulesToggles;
+    [SerializeField] private Text LegalMovesDisplay;
 
 
     void Start()
@@ -73,6 +74,16 @@ public class UI : MonoBehaviour
         MoveManager.CastleAllowed = RulesToggles[0].isOn;
         MoveManager.CheckAllowed = RulesToggles[1].isOn;
         MoveManager.EnPassantAllowed = RulesToggles[2].isOn;
+    }
+
+    public static void UpdateLegalMovesDisplay(List<int> selectedPieceLegalMoves)
+    {
+        string x = "";
+        foreach (int move in selectedPieceLegalMoves)
+        {
+            x += Square.SquareNumberToAlphaNumeric(move).ToUpper() + "\n";
+        }
+        Instance.LegalMovesDisplay.text = x;
     }
 
     public void Reset()

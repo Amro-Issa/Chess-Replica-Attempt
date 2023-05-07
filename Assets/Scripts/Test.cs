@@ -1,9 +1,16 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Test/SOTest")]
-public class Test : ScriptableObject
+public class Test : MonoBehaviour
 {
-
+    internal static void PrintMoves(List<int> selectedPieceLegalMoves)
+    {
+        foreach(int move in selectedPieceLegalMoves)
+        {
+            string x = Square.SquareNumberToAlphaNumeric(move);
+            print(x);
+        }
+    }
 }

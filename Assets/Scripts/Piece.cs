@@ -33,8 +33,8 @@ public abstract class Piece
     {
         this.type = type;
         this.color = color;
-        this.square = square;
         pieceTypeSO = Board.PieceTypeToSO[type];
+        this.square = square;
 
         gameObj = UnityEngine.Object.Instantiate(pieceTypeSO.piecePrefab, square.transform.position, Quaternion.identity, (color == PieceColor.White ? Board.Instance.whitePiecesParent : Board.Instance.blackPiecesParent).transform);
         gameObj.GetComponent<SpriteRenderer>().sprite = color == PieceColor.White ? pieceTypeSO.whitePieceSprite : pieceTypeSO.blackPieceSprite;
@@ -42,7 +42,7 @@ public abstract class Piece
         square.Occupy(this);
     }
 
-    public static PieceType GetPieceTypeFromLetter(char letter)
+    public static PieceType GetPieceType(char letter)
     {
         switch (char.Parse(letter.ToString().ToLower()))
         {
