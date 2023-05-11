@@ -51,7 +51,7 @@ public class MoveManager : MonoBehaviour
                     selectedPieceLegalMoves = selectedPiece.GetLegalMoves();
 
                     HighlightLegalSquares(squareHit.squareNumber, selectedPieceLegalMoves);
-                    UI.UpdateLegalMovesDisplay(selectedPieceLegalMoves);
+                    UI.UpdateLegalMovesDisplay(selectedPieceLegalMoves, selectedPiece.isPinned);
                 }
                 else if (pieceSelected) //checking for move play
                 {
@@ -131,7 +131,7 @@ public class MoveManager : MonoBehaviour
     //not really highlighting, just "drawing" a point over the square
     public static void HighlightLegalSquares(int selectedSquare, List<int> legalMoves)
     {
-        Board.Squares[selectedSquare].GetComponent<SpriteRenderer>().color = Board.Instance.selectionSquareColor;
+        Board.Squares[selectedSquare].Color = Square.SquareColor.Highlighted;
 
         if (legalMoves != null)
         {
@@ -145,7 +145,7 @@ public class MoveManager : MonoBehaviour
     {
         foreach (Square square in Board.Squares.Values)
         {
-            square.GetComponent<SpriteRenderer>().color = square.color;
+            square.Color = square.Color;
             square.transform.GetChild(0).gameObject.SetActive(false);
         }
     }
