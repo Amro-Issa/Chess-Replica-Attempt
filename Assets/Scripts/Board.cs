@@ -28,7 +28,7 @@ public class Board : MonoBehaviour
     public const int MaxFile = FileCount - 1;
     public const int MaxRank = RankCount - 1;
     public const int MaxSquare = SquareCount - 1;
-    private const string PieceLetters = "pnbrqk"; //note: convert this to a dictionary with Piece.PieceType as they key type so that it is safer and cleaner
+    private const string PieceLetters = "pnbrqk";
 
     private static List<Piece> WhitePieces
     {
@@ -69,71 +69,68 @@ public class Board : MonoBehaviour
 
     void Update()
     {
-        if (UI.IsSettingsActive)
+        if (Input.GetKeyDown(KeyCode.C))
         {
-            if (Input.GetKeyDown(KeyCode.C))
-            {
-                ClearBoard();
-            }
-            else if (Input.GetKeyDown(KeyCode.D)) //starting pos
-            {
-                CreatePositionFromFen(StartingFen);
-            }
-            else if (Input.GetKeyDown(KeyCode.R)) //random pos
-            {
-                CreatePositionFromFen(GenerateRandomStartingFen());
-            }
-            #region delete?
-            /*else if (Input.GetKeyDown(KeyCode.E)) //Generate with the specified exceptions
-            {
-                ClearBoard();
-
-                int counter = 0;
-                string fen;
-
-                List<char> validCharacters = UI.GetToggledPieces();
-
-                OUTER:
-                while (true)
-                {
-                    counter++;
-
-                    fen = GenerateRandomStartingFen();
-
-                    foreach (char character in fen)
-                    {
-                        if (!validCharacters.Contains(character) && character != '/' && character != '8')
-                        {
-                            if (counter == 1000000)
-                            {
-                                print(counter + " tries and the position still hasn't been reached! Incredible!");
-                                goto EndOfLoop;
-                            }
-
-                            goto OUTER;
-                        }
-                    }
-
-                    CreatePositionFromFen(fen);
-                    print("It took " + counter + " tries to get to this position");
-                    break;
-                }
-                EndOfLoop:;
-            }*/
-            #endregion
+            ClearBoard();
         }
+        else if (Input.GetKeyDown(KeyCode.D)) //starting pos
+        {
+            CreatePositionFromFen(StartingFen);
+        }
+        else if (Input.GetKeyDown(KeyCode.R)) //random pos
+        {
+            CreatePositionFromFen(GenerateRandomStartingFen());
+        }
+        #region delete?
+        /*else if (Input.GetKeyDown(KeyCode.E)) //Generate with the specified exceptions
+        {
+            ClearBoard();
+
+            int counter = 0;
+            string fen;
+
+            List<char> validCharacters = UI.GetToggledPieces();
+
+            OUTER:
+            while (true)
+            {
+                counter++;
+
+                fen = GenerateRandomStartingFen();
+
+                foreach (char character in fen)
+                {
+                    if (!validCharacters.Contains(character) && character != '/' && character != '8')
+                    {
+                        if (counter == 1000000)
+                        {
+                            print(counter + " tries and the position still hasn't been reached! Incredible!");
+                            goto EndOfLoop;
+                        }
+
+                        goto OUTER;
+                    }
+                }
+
+                CreatePositionFromFen(fen);
+                print("It took " + counter + " tries to get to this position");
+                break;
+            }
+            EndOfLoop:;
+        }*/
+        #endregion
     }
 
-    private static void CreateSquare(Vector2 position, Square.SquareColor color, int squareNumber)
+    private static void CreateSquare(Vector2 position, Color squareColor, int squareNumber)
     {
         GameObject squareObject = Instantiate(Instance.squarePrefab, position, Quaternion.identity, Instance.squaresParent.transform);
-        
+
         squareObject.name = squareNumber.ToString();
-        squareObject.GetComponent<SpriteRenderer>().color = color == Square.SquareColor.Light ? Instance.lightSquareColor : Instance.darkSquareColor;
+        squareObject.GetComponent<SpriteRenderer>().color = squareColor;
 
         Square squareClass = squareObject.GetComponent<Square>();
         squareClass.squareNumber = squareNumber;
-        squareClass.Color = color;
+        squareClass.color = squareColor;
 
         Squares.Add(squareNumber, squareClass);
     }
@@ -150,7 +147,7 @@ public class Board : MonoBehaviour
             for (int column = 0; column < FileCount; column++) //rank = row
             {
                 Vector2 spawnPos = new Vector2(column, rank);
-                Square.SquareColor squareColor = (column + rank) % 2 == 0 ? Square.SquareColor.Dark : Square.SquareColor.Light; //if (column + rank) is even, that means that square is black, otherwise it is white
+                Color squareColor = (column + rank) % 2 == 0 ? Instance.darkSquareColor : Instance.lightSquareColor; //if (column + rank) is even, that means that square is black, otherwise it is white
                 int squareNumber = (rank * FileCount) + column;
                 
                 CreateSquare(spawnPos, squareColor, squareNumber);
@@ -177,7 +174,6 @@ public class Board : MonoBehaviour
 
     public static void CreatePositionFromFen(string fen)
     {
-        //method assumes FEN is valid
         ClearBoard();
 
         MoveManager.playerTurn = Piece.PieceColor.White;

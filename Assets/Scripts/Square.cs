@@ -17,65 +17,11 @@ public class Square : MonoBehaviour
         BottomRight = -Board.MaxFile, //-7
     }
 
-    public enum SquareColor
-    {
-        Light,
-        Dark,
-        Highlighted
-    }
-
     public int squareNumber;
 
-    private SquareColor _color;
-    private Color _physicalColor;
-    public SquareColor Color
-    {
-        get
-        {
-            return _color;
-        }
-        set
-        {
-            if(value == SquareColor.Light)
-            {
-                _color = SquareColor.Light;
-            }
-            else if(value == SquareColor.Dark)
-            {
-                _color = SquareColor.Dark;
-            }
-            else if(value == SquareColor.Highlighted)
-            {
-                _physicalColor = Board.Instance.selectionSquareColor;
-                return;
-            }
-            else
-            {
-                throw new ArgumentException();
-            }
-
-            _physicalColor = GetPhysicalColor(value);
-        }
-    }
-
+    public Color color;
 
     public Piece piece;
-
-    public static Color GetPhysicalColor(SquareColor color)
-    {
-        if (color == SquareColor.Light)
-        {
-            return Board.Instance.lightSquareColor;
-        }
-        else if (color == SquareColor.Dark)
-        {
-            return Board.Instance.darkSquareColor;
-        }
-        else
-        {
-            throw new ArgumentException("Invalid color argument");
-        }
-    }
 
     public void Unoccupy()
     {
@@ -258,7 +204,7 @@ public class Square : MonoBehaviour
     /// <param name="square1"></param>
     /// <param name="square2"></param>
     /// <param name="squares"></param>
-    /// <returns>True if there are squares in between, and false if there aren't, or the squares are not reachable, or the squares are the same</returns>
+    /// <returns>True if there are squares in between, and false if there aren't, or the squares are not reachable or the squares are the same</returns>
     public static bool TryGetSquaresInBetween(int square1, int square2, out List<int> squares, bool inclusiveOfSquare1 = false, bool inclusiveOfSquare2 = false)
     {
         squares = new List<int>();

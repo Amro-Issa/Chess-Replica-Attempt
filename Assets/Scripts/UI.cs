@@ -10,26 +10,11 @@ public class UI : MonoBehaviour
 
     public static string currentFenInputFieldValue;
 
-    private static bool _isSettingsActive = true;
-    public static bool IsSettingsActive
-    {
-        get
-        {
-            return _isSettingsActive;
-        }
-        set
-        {   
-            _isSettingsActive = value;
-            Instance.SettingsGameObject.SetActive(value);
-        }
-    }
-
-    [SerializeField] private GameObject SettingsGameObject;
     [SerializeField] private GameObject RandomPositionSettingsGameObject;
     [SerializeField] private Toggle[] CheckmarkToggles;
     [SerializeField] private Toggle[] RulesToggles;
     [SerializeField] private Text LegalMovesDisplay;
-    
+
 
     void Start()
     {
@@ -41,9 +26,6 @@ public class UI : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             Board.Instance.spritesParent.SetActive(!Board.Instance.spritesParent.activeInHierarchy);
-            LegalMovesDisplay.gameObject.SetActive(!LegalMovesDisplay.gameObject.activeInHierarchy);
-            IsSettingsActive = !IsSettingsActive;
-
             RandomPositionSettingsGameObject.SetActive(!RandomPositionSettingsGameObject.activeInHierarchy);
         }
     }
@@ -94,14 +76,13 @@ public class UI : MonoBehaviour
         MoveManager.EnPassantAllowed = RulesToggles[2].isOn;
     }
 
-    public static void UpdateLegalMovesDisplay(List<int> legalMoves, bool isPinned)
+    public static void UpdateLegalMovesDisplay(List<int> selectedPieceLegalMoves)
     {
-        string x = $"({legalMoves.Count} legal moves)\n";
-        foreach (int move in legalMoves)
+        string x = "";
+        foreach (int move in selectedPieceLegalMoves)
         {
             x += Square.SquareNumberToAlphaNumeric(move).ToUpper() + "\n";
         }
-        x += $"\n This piece {(isPinned ? "is" : "is not")} pinned";
         Instance.LegalMovesDisplay.text = x;
     }
 

@@ -28,7 +28,6 @@ public abstract class Piece
     public Square square = null;
 
     public bool hasMoved = false;
-    public bool isPinned = false;
 
     public Piece(PieceType type, PieceColor color, Square square)
     {
@@ -117,11 +116,6 @@ public abstract class Piece
             if (IsPinned(out _, out List<int> squaresOfLineOfAttack))
             {
                 moves = moves.Intersect(squaresOfLineOfAttack).ToList();
-                isPinned = true;
-            }
-            else
-            {
-                isPinned = false;
             }
         }
         
@@ -143,7 +137,7 @@ public abstract class Piece
         {
             Square.Directions direction = (Square.Directions)offset;
 
-            //getting the squares between the piece guarding the king and the boundary reached by taking the same path of the offset from the king to the piece
+            //getting the squares between the piece and the boundary reached by taking the same path of the offset from the king to the piece
             if (Square.TryGetSquaresInBetween(square.squareNumber, Square.GetBoundarySquare(square.squareNumber, direction), out List<int> squaresInBetween, inclusiveOfSquare2: true))
             {
                 foreach (int square in squaresInBetween)
@@ -154,14 +148,9 @@ public abstract class Piece
                     {
                         continue;
                     }
-                    else if (piece.color == color)
-                    {
-                        //if the first encountered piece is of the same color as the piece guarding the king, we conclude logically that the guarding piece is not pinned
-                        return false;
-                    }
                     else if (piece?.color == GetOppositeColor(color))
                     {
-                        if (piece.type == PieceType.Queen || (piece.type == PieceType.Rook && Square.OrthogonalOffsets.Contains(direction)) || (piece.type == PieceType.Bishop && Square.DiagonalOffsets.Contains(direction)))
+                        if (type == PieceType.Queen || (type == PieceType.Rook && Square.OrthogonalOffsets.Contains(direction)) || (type == PieceType.Bishop && Square.DiagonalOffsets.Contains(direction)))
                         {
                             pinner = Board.Squares[square].piece;
                             squaresOfLineOfAttack = Square.GetSquaresInBetween(this.square.squareNumber, square, inclusiveOfSquare2: true);
@@ -169,7 +158,11 @@ public abstract class Piece
                         }
 
                         return false;
-                    }                    
+                    }
+                    else if (piece.color == color)
+                    {
+                        return false;
+                    }
                 }
             }
         }
