@@ -30,7 +30,10 @@ public class MoveManager : MonoBehaviour
 
     void Update()
     {
-        CheckForPieceSelectionOrMove(playerTurn);
+        if (!GameOver)
+        {
+            CheckForPieceSelectionOrMove(playerTurn);
+        }
     }
 
     public static void CheckForPieceSelectionOrMove(Piece.PieceColor color)
@@ -97,6 +100,10 @@ public class MoveManager : MonoBehaviour
                 
             }
         }
+        /*else if (Input.GetKey(KeyCode.Mouse0))
+        {
+
+        }*/
     }
 
     public static void PlayMove(Piece piece, Square targetSquare)
