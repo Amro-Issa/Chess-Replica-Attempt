@@ -237,6 +237,12 @@ public abstract class Piece
         if (Square.TryGetSquaresInBetween(King.kingPieceUnderCheck.square.squareNumber, MoveManager.squareOfChecker.squareNumber, out List<int> squaresInBetween, inclusiveOfSquare2: true))
         {
             legalMoves = legalMoves.Intersect(squaresInBetween).ToList();
+            Test.PrintMoves(legalMoves);
+        }
+        else if(legalMoves.Contains(MoveManager.squareOfChecker.squareNumber))
+        {
+            legalMoves.Clear();
+            legalMoves.Add(MoveManager.squareOfChecker.squareNumber);
         }
         else
         {
