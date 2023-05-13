@@ -145,33 +145,39 @@ public abstract class Piece
         pinner = null;
         squaresOfLineOfAttack = null;
 
+        King friendly_king = Board.GetKing(color);
         //checking if the king and the piece are reachable and if so, getting the offset
-        if (Square.TryGetOffset(Board.GetKing(color).square.squareNumber, square.squareNumber, out int offset, out _))
+        if (Square.TryGetOffset(friendly_king.square.squareNumber, square.squareNumber, out int offset, out _))
         {
             Square.Directions direction = (Square.Directions)offset;
-
+            
             //getting the squares between the piece guarding the king and the boundary reached by taking the same path of the offset from the king to the piece
-            if (Square.TryGetSquaresInBetween(square.squareNumber, Square.GetBoundarySquare(square.squareNumber, direction), out List<int> squaresInBetween, inclusiveOfSquare2: true))
+            if (Square.TryGetSquaresInBetween(friendly_king.square.squareNumber, Square.GetBoundarySquare(friendly_king.square.squareNumber, direction), out List<int> squaresInBetween, inclusiveOfSquare2: true))
             {
+                bool thisPieceReached = false;
                 foreach (int square in squaresInBetween)
                 {
                     Piece piece = Board.Squares[square].piece;
 
-                    if (piece == null)
+                    if (piece == null || piece == this)
                     {
+                        thisPieceReached = true;
                         continue;
                     }
                     else if (piece.color == color)
                     {
-                        //if the first encountered piece is of the same color as the piece guarding the king, we conclude logically that the guarding piece is not pinned
+                        //if the first encountered piece (other than the one in question of being pinned)
+                        //is of the same color as the piece guarding the king, we conclude logically that the guarding piece is not pinned (i.e. there is another guard)
                         return false;
                     }
                     else if (piece?.color == GetOppositeColor(color))
                     {
-                        if (piece.type == PieceType.Queen || (piece.type == PieceType.Rook && Square.OrthogonalOffsets.Contains(direction)) || (piece.type == PieceType.Bishop && Square.DiagonalOffsets.Contains(direction)))
+                        //if the first encountered piece (other than the one in question of being pinned)
+                        //is of the opposite color as the piece guarding the king, and the piece guarding the king is the one in between the king and the attacker
+                        if (thisPieceReached && piece.type == PieceType.Queen || (piece.type == PieceType.Rook && Square.OrthogonalOffsets.Contains(direction)) || (piece.type == PieceType.Bishop && Square.DiagonalOffsets.Contains(direction)))
                         {
                             pinner = Board.Squares[square].piece;
-                            squaresOfLineOfAttack = Square.GetSquaresInBetween(this.square.squareNumber, square, inclusiveOfSquare2: true);
+                            squaresOfLineOfAttack = Square.GetSquaresInBetween(friendly_king.square.squareNumber, square, inclusiveOfSquare2: true);
                             return true;
                         }
 
