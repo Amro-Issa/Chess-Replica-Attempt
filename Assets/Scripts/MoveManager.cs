@@ -11,11 +11,12 @@ public class MoveManager : MonoBehaviour
     private static Piece selectedPiece = null;
     private static List<int> selectedPieceLegalMoves = null;
 
-    public static Square squareOfChecker = null;
+    public static List<Piece> checkers = null;
 
     public static bool CastleAllowed { get; set; } = true;
     public static bool CheckAllowed { get; set; } = true;
     public static bool EnPassantAllowed { get; set; } = true;
+    public static bool PawnPromotionAllowed { get; set; } = true;
     public static bool GameOver { get; set; } = false;
 
     [SerializeField] private LayerMask squaresLayer;
@@ -175,7 +176,7 @@ public class MoveManager : MonoBehaviour
         pieceSelected = false;
         selectedPiece = null;
         selectedPieceLegalMoves = null;
-        squareOfChecker = null;
+        checkers = new List<Piece>();
 
         CastleAllowed = true;
         CheckAllowed = true;

@@ -200,23 +200,35 @@ public abstract class Piece
 
         //Checking for check, checkmate and stalemate
         King.kingPieceUnderCheck = null;
-        if (GetLegalMoves().Contains(Board.GetKing(GetOppositeColor(color)).square.squareNumber))
+        MoveManager.checkers.Clear();
+        if (GetAllLegalMoves(color).Contains(Board.GetKing(GetOppositeColor(color)).square.squareNumber))
         {
-            MoveManager.squareOfChecker = targetSquare;
+            //if enemy king is under check
             King.kingPieceUnderCheck = Board.GetKing(GetOppositeColor(color));
+            
+            foreach(Piece piece in Board.GetPieces(color))
+            {
+                if (piece.GetRawMoves().Contains(King.kingPieceUnderCheck.square.squareNumber))
+                {
+                    MoveManager.checkers.Add(piece);
+                }
+            }
 
             if (GetAllLegalMoves(GetOppositeColor(color)) == null)
             {
+                //if enemy has no legal moves (checkmate)
                 MoveManager.GameOver = true;
                 Debug.Log($"Game Over! {color} checkmated {GetOppositeColor(color)}.");
             }
             else
             {
                 Debug.Log($"{GetOppositeColor(color)} is under check!");
+                Debug.Log($"Number of checkers: {MoveManager.checkers.Count}");
             }
         }
         else if (GetAllLegalMoves(GetOppositeColor(color)) == null)
         {
+            //if enemy is not under check and has no legal moves (stalemate)
             MoveManager.GameOver = true;
             Debug.Log($"Game Over! Draw by Stalemate!");
         }
@@ -233,21 +245,29 @@ public abstract class Piece
     /// <param name="legalMoves"></param>
     public virtual void AdjustMovesForCheck(ref List<int> legalMoves)
     {
-        //checking for blocking moves or capture
-        if (Square.TryGetSquaresInBetween(King.kingPieceUnderCheck.square.squareNumber, MoveManager.squareOfChecker.squareNumber, out List<int> squaresInBetween, inclusiveOfSquare2: true))
+        if (MoveManager.checkers.Count == 0)
         {
-            legalMoves = legalMoves.Intersect(squaresInBetween).ToList();
-            Test.PrintMoves(legalMoves);
+            throw new Exception("Method \"AdjustMovesForCheck\" was called even though king is not under check");
         }
-        else if(legalMoves.Contains(MoveManager.squareOfChecker.squareNumber))
+
+        //need to account for one checker and more than one checker
+        if (MoveManager.checkers.Count == 1)
         {
-            legalMoves.Clear();
-            legalMoves.Add(MoveManager.squareOfChecker.squareNumber);
+            //checking for blocking moves or capture
+            if (Square.TryGetSquaresInBetween(King.kingPieceUnderCheck.square.squareNumber, MoveManager.checkers[0].square.squareNumber, out List<int> squaresInBetween, inclusiveOfSquare2: true))
+            {
+                legalMoves = legalMoves.Intersect(squaresInBetween).ToList();
+                return;
+            }
+            else if(legalMoves.Contains(MoveManager.checkers[0].square.squareNumber))
+            {
+                legalMoves.Clear();
+                legalMoves.Add(MoveManager.checkers[0].square.squareNumber);
+                return;
+            }
         }
-        else
-        {
-            legalMoves.Clear();
-        }
+        
+        legalMoves.Clear();
     }
     protected virtual List<int> GetSquaresDefending()
     {

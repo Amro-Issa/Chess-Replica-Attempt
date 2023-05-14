@@ -92,6 +92,7 @@ public class UI : MonoBehaviour
         MoveManager.CastleAllowed = RulesToggles[0].isOn;
         MoveManager.CheckAllowed = RulesToggles[1].isOn;
         MoveManager.EnPassantAllowed = RulesToggles[2].isOn;
+        MoveManager.PawnPromotionAllowed = RulesToggles[3].isOn;
     }
 
     public static void UpdateLegalMovesDisplay(List<int> legalMoves, bool isPinned)
