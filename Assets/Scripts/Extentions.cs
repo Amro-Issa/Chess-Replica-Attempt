@@ -10,17 +10,17 @@ public static class Extentions
         return longRangePieceTypes.Contains(type);
     }
 
-    public static bool IsDiagonalOffset(this Square.Directions offset)
+    public static bool IsDiagonalOffset(this Square.Direction offset)
     {
         return Square.DiagonalOffsets.Contains(offset);
     }
 
-    public static bool IsHorizontalOffset(this Square.Directions offset)
+    public static bool IsHorizontalOffset(this Square.Direction offset)
     {
         return Square.HorizontalOffsets.Contains(offset);
     }
 
-    public static bool IsVerticalOffset(this Square.Directions offset)
+    public static bool IsVerticalOffset(this Square.Direction offset)
     {
         return Square.VerticalOffsets.Contains(offset);
     }

@@ -54,12 +54,12 @@ public class MoveManager : MonoBehaviour
                     selectedPiece = squareHit.piece;
                     selectedPieceLegalMoves = selectedPiece.GetLegalMoves();
 
-                    HighlightLegalSquares(squareHit.squareNumber, selectedPieceLegalMoves);
+                    HighlightLegalSquares(squareHit.SquareNumber, selectedPieceLegalMoves);
                     UI.UpdateLegalMovesDisplay(selectedPieceLegalMoves, selectedPiece.isPinned);
                 }
                 else if (pieceSelected) //checking for move play
                 {
-                    if (selectedPiece.GetLegalMoves().Contains(squareHit.squareNumber)) //seeing if the destination square is a legal square that the piece can move to
+                    if (selectedPiece.GetLegalMoves().Contains(squareHit.SquareNumber)) //seeing if the destination square is a legal square that the piece can move to
                     {
                         PlayMove(selectedPiece, squareHit);
                         playerTurn = Piece.GetOppositeColor(playerTurn);
@@ -129,6 +129,11 @@ public class MoveManager : MonoBehaviour
     public static void PlayCaptureSound()
     {
         Instance.audioSources.transform.Find("PieceCapture").GetComponent<AudioSource>().Play();
+    }
+
+    public static void DestroyPiece(Piece piece)
+    {
+        Destroy(piece.gameObj);
     }
 
     public static bool CheckForStalemate(Piece.PieceColor color)

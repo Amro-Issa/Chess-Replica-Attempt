@@ -132,7 +132,7 @@ public class Board : MonoBehaviour
         squareObject.GetComponent<SpriteRenderer>().color = color == Square.SquareColor.Light ? Instance.lightSquareColor : Instance.darkSquareColor;
 
         Square squareClass = squareObject.GetComponent<Square>();
-        squareClass.squareNumber = squareNumber;
+        squareClass.SquareNumber = squareNumber;
         squareClass.Color = color;
 
         Squares.Add(squareNumber, squareClass);

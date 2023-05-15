@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Square : MonoBehaviour
 {
-    public enum Directions
+    public enum Direction
     {//comment represents standard for 8x8 board
         TopLeft = Board.MaxFile, //7
         Top = Board.FileCount, //8
@@ -24,7 +24,44 @@ public class Square : MonoBehaviour
         Highlighted
     }
 
-    public int squareNumber;
+    private int? square_number = null;
+    public int SquareNumber
+    {
+        get
+        {
+            if (square_number != null)
+            {
+                return (int)square_number;
+            }
+            else
+            {
+                throw new Exception("Field is null");
+            }
+        }
+        set
+        {
+            if (square_number == null)
+            {
+                square_number = value;
+            }
+        }
+    }
+
+    public int File
+    {
+        get
+        {
+            return GetFile(SquareNumber);
+        }
+    }
+
+    public int Rank
+    {
+        get
+        {
+            return GetRank(SquareNumber);
+        }
+    }
 
     private SquareColor _color;
     private Color _physicalColor;
@@ -88,29 +125,29 @@ public class Square : MonoBehaviour
     }
 
     #region Offsets
-    public static readonly List<Directions> HorizontalOffsets = new List<Directions> { Directions.Left, Directions.Right };
-    public static readonly List<Directions> VerticalOffsets = new List<Directions> { Directions.Top, Directions.Bottom };
-    public static readonly List<Directions> OrthogonalOffsets = new List<Directions> { Directions.Left, Directions.Right, Directions.Top, Directions.Bottom };
-    public static readonly List<Directions> DiagonalOffsets = new List<Directions> { Directions.TopLeft, Directions.TopRight, Directions.BottomLeft, Directions.BottomRight };
+    public static readonly List<Direction> HorizontalOffsets = new List<Direction> { Direction.Left, Direction.Right };
+    public static readonly List<Direction> VerticalOffsets = new List<Direction> { Direction.Top, Direction.Bottom };
+    public static readonly List<Direction> OrthogonalOffsets = new List<Direction> { Direction.Left, Direction.Right, Direction.Top, Direction.Bottom };
+    public static readonly List<Direction> DiagonalOffsets = new List<Direction> { Direction.TopLeft, Direction.TopRight, Direction.BottomLeft, Direction.BottomRight };
 
     #region PawnOffsets
-    public static readonly List<Directions> whitePawnOffsets = new List<Directions> { Directions.TopLeft, Directions.Top, Directions.TopRight };
-    public static readonly List<Directions> whitePawnCaptureOffsets = new List<Directions> { Directions.TopLeft, Directions.TopRight };
+    public static readonly List<Direction> whitePawnOffsets = new List<Direction> { Direction.TopLeft, Direction.Top, Direction.TopRight };
+    public static readonly List<Direction> whitePawnCaptureOffsets = new List<Direction> { Direction.TopLeft, Direction.TopRight };
 
-    public static readonly List<Directions> blackPawnOffsets = new List<Directions> { Directions.BottomLeft, Directions.Bottom, Directions.BottomRight };
-    public static readonly List<Directions> blackPawnCaptureOffsets = new List<Directions> { Directions.BottomLeft, Directions.BottomRight };
+    public static readonly List<Direction> blackPawnOffsets = new List<Direction> { Direction.BottomLeft, Direction.Bottom, Direction.BottomRight };
+    public static readonly List<Direction> blackPawnCaptureOffsets = new List<Direction> { Direction.BottomLeft, Direction.BottomRight };
     #endregion
 
     public static readonly List<int> knightOffsets = new List<int>
     {//comment is standard 8x8 board
-        (int)Directions.Bottom * 2 + (int)Directions.Left, //-17
-        (int)Directions.Bottom * 2 + (int)Directions.Right, //-15
-        (int)Directions.Top * 2 + (int)Directions.Left, //15
-        (int)Directions.Top * 2 + (int)Directions.Right, //17
-        (int)Directions.Bottom + (int)Directions.Left * 2, //-10
-        (int)Directions.Bottom + (int)Directions.Right * 2, //-6
-        (int)Directions.Top + (int)Directions.Left * 2, //6
-        (int)Directions.Top + (int)Directions.Right * 2, //10
+        (int)Direction.Bottom * 2 + (int)Direction.Left, //-17
+        (int)Direction.Bottom * 2 + (int)Direction.Right, //-15
+        (int)Direction.Top * 2 + (int)Direction.Left, //15
+        (int)Direction.Top * 2 + (int)Direction.Right, //17
+        (int)Direction.Bottom + (int)Direction.Left * 2, //-10
+        (int)Direction.Bottom + (int)Direction.Right * 2, //-6
+        (int)Direction.Top + (int)Direction.Left * 2, //6
+        (int)Direction.Top + (int)Direction.Right * 2, //10
     }; //order is important, the first 4 offsets are 1 file away from the original square, while the last 4 are 2 files away
     #endregion
 
@@ -162,7 +199,7 @@ public class Square : MonoBehaviour
     {
         return rank * Board.FileCount + file; //(file * Board.rankCount + rank) also works
     }
-    public static int GetSquare(int referenceSquare, Directions direction)
+    public static int GetSquare(int referenceSquare, Direction direction)
     {
         return referenceSquare + (int)direction;
     }
@@ -177,7 +214,7 @@ public class Square : MonoBehaviour
         targetSquare = GetSquare(file, rank);
         return true;
     } //use when arguments are not certain
-    public static bool TryGetSquare(int referenceSquare, Directions direction, out int targetSquare) //returns true if operation was successful
+    public static bool TryGetSquare(int referenceSquare, Direction direction, out int targetSquare) //returns true if operation was successful
     {
         targetSquare = referenceSquare + (int)direction;
 
@@ -189,7 +226,7 @@ public class Square : MonoBehaviour
 
         return true;
     } //use when arguments are not certain
-    public static int GetBoundarySquare(int referenceSquare, Directions direction)
+    public static int GetBoundarySquare(int referenceSquare, Direction direction)
     {
         int file = GetFile(referenceSquare);
         int rank = GetRank(referenceSquare);
@@ -202,32 +239,32 @@ public class Square : MonoBehaviour
 
         switch (direction)
         {
-            case Directions.Left: //
+            case Direction.Left: //
                 multiplier = file;
                 break;
-            case Directions.Right: //
+            case Direction.Right: //
                 multiplier = Board.FileCount - 1 - file;
                 break;
-            case Directions.Bottom: //
+            case Direction.Bottom: //
                 multiplier = rank;
                 break;
-            case Directions.Top: //
+            case Direction.Top: //
                 multiplier = Board.RankCount - 1 - rank;
                 break;
-            case Directions.BottomLeft: //
+            case Direction.BottomLeft: //
                 multiplier = min;
                 break;
-            case Directions.TopLeft:
+            case Direction.TopLeft:
                 multiplier = Board.RankCount - 2 - max;
                 break;
-            case Directions.BottomRight:
+            case Direction.BottomRight:
                 while (GetFile(temp) != Board.FileCount - 1 && GetRank(temp) != 0)
                 {
                     temp += (int)direction;
                 }
 
                 return temp;
-            case Directions.TopRight: //
+            case Direction.TopRight: //
                 while (GetFile(temp) != Board.FileCount - 1 && GetRank(temp) != Board.RankCount - 1)
                 {
                     temp += (int)direction;
@@ -302,7 +339,7 @@ public class Square : MonoBehaviour
     }
     public static bool AreSquaresInBetweenEmpty(Piece piece1, Piece piece2)
     {
-        if (TryGetSquaresInBetween(piece1.square.squareNumber, piece2.square.squareNumber, out List<int> squaresInBetween))
+        if (TryGetSquaresInBetween(piece1.square.SquareNumber, piece2.square.SquareNumber, out List<int> squaresInBetween))
         {
             foreach (int squareNumber in squaresInBetween)
             {

@@ -76,6 +76,28 @@ public abstract class Piece
 
         return moves.Count == 0 ? null : moves;  //make it so that the method returns an empty list instead of <null> if there are no legal moves for any piece of color <color>
     }
+    public static List<int> GetAllRawMoves(PieceColor color)
+    {
+        var moves = new List<int>();
+
+        foreach (Piece piece in Board.GetPieces(color))
+        {
+            if (piece is King)
+            {
+                moves.AddRange(piece.GetRawMoves(true));
+            }
+            else if (piece is Pawn)
+            {
+                moves.AddRange(piece.GetSquaresDefending());
+            }
+            else
+            {
+                moves.AddRange(piece.GetRawMoves());
+            }
+        }
+
+        return moves.Count == 0 ? null : moves;  //fix: make it so that the method returns an empty list instead of <null> if there are no legal moves for any piece of color <color>
+    }
     public static List<int> GetAllDefendedSquares(PieceColor color)
     {
         var moves = new List<int>();
@@ -147,12 +169,12 @@ public abstract class Piece
 
         King friendly_king = Board.GetKing(color);
         //checking if the king and the piece are reachable and if so, getting the offset
-        if (Square.TryGetOffset(friendly_king.square.squareNumber, square.squareNumber, out int offset, out _))
+        if (Square.TryGetOffset(friendly_king.square.SquareNumber, square.SquareNumber, out int offset, out _))
         {
-            Square.Directions direction = (Square.Directions)offset;
+            Square.Direction direction = (Square.Direction)offset;
             
             //getting the squares between the piece guarding the king and the boundary reached by taking the same path of the offset from the king to the piece
-            if (Square.TryGetSquaresInBetween(friendly_king.square.squareNumber, Square.GetBoundarySquare(friendly_king.square.squareNumber, direction), out List<int> squaresInBetween, inclusiveOfSquare2: true))
+            if (Square.TryGetSquaresInBetween(friendly_king.square.SquareNumber, Square.GetBoundarySquare(friendly_king.square.SquareNumber, direction), out List<int> squaresInBetween, inclusiveOfSquare2: true))
             {
                 bool thisPieceReached = false;
                 foreach (int square in squaresInBetween)
@@ -177,7 +199,7 @@ public abstract class Piece
                         if (thisPieceReached && piece.type == PieceType.Queen || (piece.type == PieceType.Rook && Square.OrthogonalOffsets.Contains(direction)) || (piece.type == PieceType.Bishop && Square.DiagonalOffsets.Contains(direction)))
                         {
                             pinner = Board.Squares[square].piece;
-                            squaresOfLineOfAttack = Square.GetSquaresInBetween(friendly_king.square.squareNumber, square, inclusiveOfSquare2: true);
+                            squaresOfLineOfAttack = Square.GetSquaresInBetween(friendly_king.square.SquareNumber, square, inclusiveOfSquare2: true);
                             return true;
                         }
 
@@ -195,20 +217,20 @@ public abstract class Piece
         hasMoved = true;
         square.Unoccupy(); //unoccupying old square
         square = targetSquare;
-        square.Occupy(this); //occupying new square with this piece
+        targetSquare.Occupy(this); //occupying new square with this piece
         gameObj.transform.position = targetSquare.transform.position;
 
         //Checking for check, checkmate and stalemate
         King.kingPieceUnderCheck = null;
         MoveManager.checkers.Clear();
-        if (GetAllLegalMoves(color).Contains(Board.GetKing(GetOppositeColor(color)).square.squareNumber))
+        if (GetAllLegalMoves(color).Contains(Board.GetKing(GetOppositeColor(color)).square.SquareNumber))
         {
             //if enemy king is under check
             King.kingPieceUnderCheck = Board.GetKing(GetOppositeColor(color));
             
             foreach(Piece piece in Board.GetPieces(color))
             {
-                if (piece.GetRawMoves().Contains(King.kingPieceUnderCheck.square.squareNumber))
+                if (piece.GetRawMoves().Contains(King.kingPieceUnderCheck.square.SquareNumber))
                 {
                     MoveManager.checkers.Add(piece);
                 }
@@ -254,15 +276,15 @@ public abstract class Piece
         if (MoveManager.checkers.Count == 1)
         {
             //checking for blocking moves or capture
-            if (Square.TryGetSquaresInBetween(King.kingPieceUnderCheck.square.squareNumber, MoveManager.checkers[0].square.squareNumber, out List<int> squaresInBetween, inclusiveOfSquare2: true))
+            if (Square.TryGetSquaresInBetween(King.kingPieceUnderCheck.square.SquareNumber, MoveManager.checkers[0].square.SquareNumber, out List<int> squaresInBetween, inclusiveOfSquare2: true))
             {
                 legalMoves = legalMoves.Intersect(squaresInBetween).ToList();
                 return;
             }
-            else if(legalMoves.Contains(MoveManager.checkers[0].square.squareNumber))
+            else if(legalMoves.Contains(MoveManager.checkers[0].square.SquareNumber))
             {
                 legalMoves.Clear();
-                legalMoves.Add(MoveManager.checkers[0].square.squareNumber);
+                legalMoves.Add(MoveManager.checkers[0].square.SquareNumber);
                 return;
             }
         }
@@ -273,7 +295,7 @@ public abstract class Piece
     {
         return GetRawMoves();
     }
-    protected abstract List<int> GetRawMoves();
+    public abstract List<int> GetRawMoves(bool absolute = false);
 }
 
 public sealed class Pawn : Piece
@@ -296,9 +318,9 @@ public sealed class Pawn : Piece
     {
         if (MoveManager.EnPassantAllowed)
         {
-            if (IsMoveDoubleAdvancement(square.squareNumber, targetSquare.squareNumber))
+            if (IsMoveDoubleAdvancement(square.SquareNumber, targetSquare.SquareNumber))
             {
-                enPassantSquare = Board.Squares[(square.squareNumber + targetSquare.squareNumber) / 2];
+                enPassantSquare = Board.Squares[(square.SquareNumber + targetSquare.SquareNumber) / 2];
                 enPassantPawn = this;
             }
             else if (targetSquare == enPassantSquare)
@@ -311,29 +333,43 @@ public sealed class Pawn : Piece
         }
 
         base.Move(targetSquare);
+        
+        if(MoveManager.PawnPromotionAllowed)
+        {
+            if((color == PieceColor.White && square.Rank == Board.MaxRank) || (color == PieceColor.Black && square.Rank == 0))
+            {
+                Promote(PieceType.Queen);
+            }
+        }
     }
 
-    protected override List<int> GetRawMoves()
+    public override List<int> GetRawMoves(bool absolute = false)
     {
         var moves = new List<int>();
-        List<Square.Directions> offsets = (color == PieceColor.White) ? Square.whitePawnOffsets : Square.blackPawnOffsets; //order is important
+        List<Square.Direction> offsets = (color == PieceColor.White) ? Square.whitePawnOffsets : Square.blackPawnOffsets; //order is important
 
         foreach (var offset in offsets)
         {
-            int num = square.squareNumber + (int)offset;
+            int num = square.SquareNumber + (int)offset;
 
             //checking if the square is actually on the board (in bound)
-            if (Square.IsSquareInRange(num) && Square.AreSquaresAdjacent(square.squareNumber, num))
+            if (Square.IsSquareInRange(num) && Square.AreSquaresAdjacent(square.SquareNumber, num))
             {
-                if (Square.VerticalOffsets.Contains(offset) && Board.Squares[num].piece == null)
+                if (Square.VerticalOffsets.Contains(offset))
                 {
-                    moves.Add(num);
+                    if (absolute || Board.Squares[num].piece == null)
+                    {
+                        moves.Add(num);
 
-                    if (IsDoubleAdvancementAvailable()) moves.Add(num + (int)offset);
+                        if (IsDoubleAdvancementAvailable()) moves.Add(num + (int)offset);
+                    }
                 }
-                else if (Square.DiagonalOffsets.Contains(offset) && Board.Squares[num].piece?.color == GetOppositeColor(color) || (Board.Squares[num] == enPassantSquare && enPassantPawn.color == GetOppositeColor(color)))
+                else if (Square.DiagonalOffsets.Contains(offset))
                 {
-                    moves.Add(num);
+                    if (absolute || Board.Squares[num].piece?.color == GetOppositeColor(color) || (Board.Squares[num] == enPassantSquare && enPassantPawn.color == GetOppositeColor(color)))
+                    {
+                        moves.Add(num);
+                    }
                 }
             }
         }
@@ -348,20 +384,20 @@ public sealed class Pawn : Piece
     /// <returns></returns>
     private bool IsDoubleAdvancementAvailable(bool raw = false)
     {
-        int rank = Square.GetRank(square.squareNumber);
+        int rank = Square.GetRank(square.SquareNumber);
 
         if (!hasMoved)
         {
             if (color == PieceColor.White && (rank == 0 || rank == 1)) //rank == 0 for if a white pawn spawns on the back rank when generating a random position
             {
-                if (raw == true || !Board.IsSquareOccupied(square.squareNumber + (int)Square.Directions.Top * 2))
+                if (raw == true || !Board.IsSquareOccupied(square.SquareNumber + (int)Square.Direction.Top * 2))
                 {
                     return true;
                 }
             }
             else if (color == PieceColor.Black && (rank == Board.MaxRank || rank == Board.MaxRank - 1)) //rank == Board.maxRank for if a black pawn spawns on the back rank when generating a random position
             {
-                if (raw == true || !Board.IsSquareOccupied(square.squareNumber + (int)Square.Directions.Bottom * 2))
+                if (raw == true || !Board.IsSquareOccupied(square.SquareNumber + (int)Square.Direction.Bottom * 2))
                 {
                     return true;
                 }
@@ -378,19 +414,48 @@ public sealed class Pawn : Piece
     protected override List<int> GetSquaresDefending()
     {
         var squares = new List<int>();
-        List<Square.Directions> offsets = color == PieceColor.White ? Square.whitePawnCaptureOffsets : Square.blackPawnCaptureOffsets; //order is important
+        List<Square.Direction> offsets = color == PieceColor.White ? Square.whitePawnCaptureOffsets : Square.blackPawnCaptureOffsets; //order is important
 
         foreach (var offset in offsets)
         {
-            int target = square.squareNumber + (int)offset;
+            int target = square.SquareNumber + (int)offset;
 
-            if (Square.IsSquareInRange(target) && Square.AreSquaresAdjacent(square.squareNumber, target))
+            if (Square.IsSquareInRange(target) && Square.AreSquaresAdjacent(square.SquareNumber, target))
             {
                 squares.Add(target);
             }
         }
 
         return squares;
+    }
+
+    /// <summary>
+    /// Promotes this pawn to the given piece type
+    /// </summary>
+    /// <param name="type">the piece to promote to</param>
+    protected void Promote(PieceType type)
+    {
+        MoveManager.DestroyPiece(this);
+        Piece piece;
+        switch (type)
+        {
+            case PieceType.Bishop:
+                piece = new Bishop(color, square);
+                break;
+            case PieceType.Knight:
+                piece = new Knight(color, square);
+                break;
+            case PieceType.Rook:
+                piece = new Rook(color, square);
+                break;
+            case PieceType.Queen:
+                piece = new Queen(color, square);
+                break;
+            default:
+                throw new Exception("Cannot promote pawn to that piece");
+        }
+        piece.Move(square);
+        piece.hasMoved = false;
     }
 }
 
@@ -401,15 +466,18 @@ public sealed class Knight : Piece
 
     }
     
-    protected override List<int> GetRawMoves()
+    
+    /// <param name="absolute">this method gets the absolute raw moves regardless of the value of this parameter</param>
+    /// <returns></returns>
+    public override List<int> GetRawMoves(bool absolute = true)
     {
         var moves = new List<int>();
 
         for (int i = 0; i < Square.knightOffsets.Count; i++)
         {
-            int targetSquareNumber = square.squareNumber + Square.knightOffsets[i];
+            int targetSquareNumber = square.SquareNumber + Square.knightOffsets[i];
 
-            if (Square.IsSquareInRange(targetSquareNumber) && Square.GetFileDifference(square.squareNumber, targetSquareNumber) <= 2)
+            if (Square.IsSquareInRange(targetSquareNumber) && Square.GetFileDifference(square.SquareNumber, targetSquareNumber) <= 2)
             {
                 moves.Add(targetSquareNumber);
             }
@@ -426,20 +494,20 @@ public sealed class Bishop : Piece
             
     }
         
-    protected override List<int> GetRawMoves()
+    public override List<int> GetRawMoves(bool absolute = false)
     {
         var moves = new List<int>();
 
-        foreach (Square.Directions offset in Square.DiagonalOffsets)
+        foreach (Square.Direction offset in Square.DiagonalOffsets)
         {
-            int reference = square.squareNumber;
+            int reference = square.SquareNumber;
 
             while (Square.TryGetSquare(reference, offset, out int target))
             {
                 moves.Add(target);
                 reference = target;
 
-                if (Board.IsSquareOccupied(target)) //if square is occupied by either a friendly or enemy piece
+                if (!absolute && Board.IsSquareOccupied(target)) //if square is occupied by either a friendly or enemy piece
                 {   
                     break;
                 }
@@ -457,20 +525,20 @@ public sealed class Rook : Piece
 
     }
 
-    protected override List<int> GetRawMoves()
+    public override List<int> GetRawMoves(bool absolute = false)
     {
         var moves = new List<int>();
 
-        foreach (Square.Directions offset in Square.OrthogonalOffsets)
+        foreach (Square.Direction offset in Square.OrthogonalOffsets)
         {
-            int temp = square.squareNumber;
+            int temp = square.SquareNumber;
 
             while (Square.TryGetSquare(temp, offset, out int targetSquare))
             {
                 moves.Add(targetSquare);
                 temp = targetSquare;
                 
-                if (Board.IsSquareOccupied(targetSquare)) //if square is occupied by either a friendly or enemy piece
+                if (!absolute && Board.IsSquareOccupied(targetSquare)) //if square is occupied by either a friendly or enemy piece
                 {
                     break;
                 }
@@ -488,20 +556,20 @@ public sealed class Queen : Piece
 
     }
 
-    protected override List<int> GetRawMoves()
+    public override List<int> GetRawMoves(bool absolute = false)
     {
         var moves = new List<int>();
 
-        foreach (Square.Directions offset in Enum.GetValues(typeof(Square.Directions)))
+        foreach (Square.Direction offset in Enum.GetValues(typeof(Square.Direction)))
         {
-            int temp = square.squareNumber;
+            int temp = square.SquareNumber;
 
             while (Square.TryGetSquare(temp, offset, out int targetSquare))
             {
                 moves.Add(targetSquare);
                 temp = targetSquare;
                 
-                if (Board.IsSquareOccupied(targetSquare)) //if square is occupied by either a friendly or enemy piece
+                if (!absolute && Board.IsSquareOccupied(targetSquare)) //if square is occupied by either a friendly or enemy piece
                 {
                     break;
                 }
@@ -527,21 +595,35 @@ public sealed class King : Piece
     /// <summary>
     /// Adjusts moves to prevent king from moving to illegal squares
     /// </summary>
-    public override void AdjustMovesForCheck(ref List<int> rawLegalMoves)
+    public override void AdjustMovesForCheck(ref List<int> legalMoves)
     {
-        
+        var enemyRawMoves = GetAllRawMoves(GetOppositeColor(color));
+        var checkersRawMoves = new List<int>();
+
+        foreach (Piece checker in MoveManager.checkers)
+        {
+            checkersRawMoves.AddRange(checker.GetRawMoves(true));
+        }
+
+        foreach (int move in legalMoves.ToArray())
+        {
+            if (enemyRawMoves.Contains(move) || checkersRawMoves.Contains(move))
+            {
+                legalMoves.Remove(move);
+            }
+        }
     }
 
-    protected override List<int> GetRawMoves()
+    public override List<int> GetRawMoves(bool absolute = false)
     {
-        return GetMoves(MoveManager.CastleAllowed);
+        return GetRawMovesV2(absolute, includeCastleMoves: false);
     }
 
     public override void Move(Square targetSquare)
     {
-        if (!Square.AreSquaresAdjacent(square.squareNumber, targetSquare.squareNumber))
+        if (!Square.AreSquaresAdjacent(square.SquareNumber, targetSquare.SquareNumber))
         {
-            Castle(square.squareNumber > targetSquare.squareNumber ? CastleType.QueenSide : CastleType.KingSide);
+            Castle(square.SquareNumber > targetSquare.SquareNumber ? CastleType.QueenSide : CastleType.KingSide);
         }
         else
         {
@@ -559,25 +641,25 @@ public sealed class King : Piece
 
         if (!hasMoved && kingPieceUnderCheck != this)
         {
-            int num = square.squareNumber + (castleType == CastleType.QueenSide ? -4 : 3);
+            int num = square.SquareNumber + (castleType == CastleType.QueenSide ? -4 : 3);
             if (Square.IsSquareInRange(num))
             {
                 rook = (Board.Squares[num].piece is Rook r) ? r : null;
             
                 if (rook != null && !rook.hasMoved)
                 {
-                    if (Square.AreSquaresInBetweenEmpty(square.squareNumber, rook.square.squareNumber))
+                    if (Square.AreSquaresInBetweenEmpty(square.SquareNumber, rook.square.SquareNumber))
                     {
                         int add = castleType == CastleType.QueenSide ? -3 : 3;
 
                         //check if path is guarded by enemy piece(s) //GETS THE SQUARES BETWEEN THE KING AND THE SQUARE 3 SQUARES BESIDE IT (NOT FROM KING TO ROOK) SO THAT YOU CAN STILL CASTLE DESPITE IF THERE IS A PIECE BLOCKING THE ROOKS PATH BUT NOT THE KING's
-                        if (Square.AreSquaresGuarded(GetOppositeColor(color), Square.GetSquaresInBetween(square.squareNumber, square.squareNumber + add)))
+                        if (Square.AreSquaresGuarded(GetOppositeColor(color), Square.GetSquaresInBetween(square.SquareNumber, square.SquareNumber + add)))
                         {
                             return false;
                         }
 
-                        kingCastleSquare = castleType == CastleType.QueenSide ? Board.Squares[square.squareNumber - 2] : Board.Squares[square.squareNumber + 2];
-                        rookCastleSquare = castleType == CastleType.QueenSide ? Board.Squares[square.squareNumber - 1] : Board.Squares[square.squareNumber + 1];
+                        kingCastleSquare = castleType == CastleType.QueenSide ? Board.Squares[square.SquareNumber - 2] : Board.Squares[square.SquareNumber + 2];
+                        rookCastleSquare = castleType == CastleType.QueenSide ? Board.Squares[square.SquareNumber - 1] : Board.Squares[square.SquareNumber + 1];
 
                         return true;
                     }
@@ -601,32 +683,30 @@ public sealed class King : Piece
 
     protected override List<int> GetSquaresDefending()
     {
-        return GetMoves(false, true);
+        return GetRawMovesV2(absolute: true, includeCastleMoves: false);
     }
 
-    private List<int> GetMoves(bool includeCastleMoves = true, bool canWalkIntoCheck = false)
+    private List<int> GetRawMovesV2(bool absolute = false, bool includeCastleMoves = true)
     {
         var moves = new List<int>();
 
-        foreach (int offset in Enum.GetValues(typeof(Square.Directions)))
+        List<int> enemyRawMoves = null;
+
+        if (!absolute)
         {
-            int targetSquareNumber = square.squareNumber + offset;
+            enemyRawMoves = GetAllRawMoves(GetOppositeColor(color));
+        }
+
+        foreach (int offset in Enum.GetValues(typeof(Square.Direction)))
+        {
+            int targetSquareNumber = square.SquareNumber + offset;
 
             //if square is within board range and squares are adjacent
-            if (Square.IsSquareInRange(targetSquareNumber) && Square.AreSquaresAdjacent(square.squareNumber, targetSquareNumber))
+            if (Square.IsSquareInRange(targetSquareNumber) && Square.AreSquaresAdjacent(square.SquareNumber, targetSquareNumber))
             {
-                if (canWalkIntoCheck)
+                if (absolute || !enemyRawMoves.Contains(targetSquareNumber))
                 {
                     moves.Add(targetSquareNumber);
-                }
-                else
-                {
-                    var defendedSquares = GetAllDefendedSquares(GetOppositeColor(color));
-
-                    if (!defendedSquares.Contains(targetSquareNumber))
-                    {
-                        moves.Add(targetSquareNumber);
-                    }
                 }
             }
         }
@@ -637,7 +717,7 @@ public sealed class King : Piece
             {
                 if (IsCastlingAvailable((CastleType)i, out _, out Square kingCastleSquare, out _))
                 {
-                    moves.Add(kingCastleSquare.squareNumber);
+                    moves.Add(kingCastleSquare.SquareNumber);
                 }
             }
         }
