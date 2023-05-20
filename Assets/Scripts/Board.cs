@@ -30,6 +30,8 @@ public class Board : MonoBehaviour
     public const int MaxSquare = SquareCount - 1;
     private const string PieceLetters = "pnbrqk"; //note: convert this to a dictionary with Piece.PieceType as they key type so that it is safer and cleaner
 
+    public static HashSet<Piece.PieceType> RandomGenerationExclusions = new HashSet<Piece.PieceType>();
+
     private static List<Piece> WhitePieces
     {
         get
@@ -81,7 +83,7 @@ public class Board : MonoBehaviour
             }
             else if (Input.GetKeyDown(KeyCode.R)) //random pos
             {
-                CreatePositionFromFen(GenerateRandomStartingFen());
+                CreatePositionFromFen(GenerateRandomStartingFen(RandomGenerationExclusions));
             }
             #region delete?
             /*else if (Input.GetKeyDown(KeyCode.E)) //Generate with the specified exceptions
@@ -251,6 +253,57 @@ public class Board : MonoBehaviour
                 if (PieceLetters[randomIndex] == 'k') kingGenerated = true;
 
                 char character = i == 0 ? PieceLetters[randomIndex] : char.ToUpper(PieceLetters[randomIndex]);
+                fen += character;
+            }
+
+            //setting up generation location of other color
+            if (i == 0)
+            {
+                for (int k = 0; k < 4; k++)
+                {
+                    fen += $"/{FileCount}";
+                }
+                fen += "/";
+            }
+        }
+
+        //print("The random fen produced is: " + fen);
+        return fen;
+    }
+    private static string GenerateRandomStartingFen(HashSet<Piece.PieceType> exclusions)
+    {
+        string pieceCharacters = "";
+
+        foreach(char character in PieceLetters)
+        {
+            if (!exclusions.Contains(Piece.GetPieceType(character)))
+            {
+                pieceCharacters += character;
+            }    
+        }
+
+        string fen = "";
+        for (int i = 0; i < 2; i++) //looping twice, once for each color
+        {
+            bool kingGenerated = false;
+
+            for (int j = 0; j < FileCount * 2; j++) //looping the number of pieces to put on the board (16 times for a board with 8 files)
+            {
+                if (j == FileCount)
+                {
+                    //next row
+                    fen += '/';
+                }
+
+                //excluding king piece if one has already been generated
+                int randomIndex = kingGenerated ? UnityEngine.Random.Range(0, pieceCharacters.Length - 1) : UnityEngine.Random.Range(0, pieceCharacters.Length);
+
+                if (pieceCharacters[randomIndex] == 'k')
+                {
+                    kingGenerated = true;
+                }
+
+                char character = i == 0 ? pieceCharacters[randomIndex] : char.ToUpper(pieceCharacters[randomIndex]);
                 fen += character;
             }
 

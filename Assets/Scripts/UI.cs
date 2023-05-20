@@ -72,11 +72,9 @@ public class UI : MonoBehaviour
 
     [SerializeField] private GameObject SettingsGameObject;
     [SerializeField] private GameObject RandomPositionSettingsGameObject;
-    [SerializeField] private Toggle[] CheckmarkToggles;
     [SerializeField] private Toggle[] RulesToggles;
     [SerializeField] private Text LegalMovesDisplay;
     [SerializeField] private GameObject PawnPromotionGUI;
-
 
     void Start()
     {
@@ -95,22 +93,16 @@ public class UI : MonoBehaviour
         }
     }
 
-    public static List<char> GetToggledPieces()
+    public void TogglePiece(PieceTypeSO pieceTypeSO)
     {
-        List<char> validCharacters = new List<char>();
-
-        string characters = "PNBRQKpnbrqk";
-
-        for (int i = 0; i < Instance.CheckmarkToggles.Length; i++)
+        if (Board.RandomGenerationExclusions.Contains(pieceTypeSO.pieceType))
         {
-            if (Instance.CheckmarkToggles[i].isOn)
-            {
-                validCharacters.Add(characters[i]);
-            }
+            Board.RandomGenerationExclusions.Remove(pieceTypeSO.pieceType);
         }
-
-        print("valid characters: " + new string(validCharacters.ToArray()));
-        return validCharacters;
+        else
+        {
+            Board.RandomGenerationExclusions.Add(pieceTypeSO.pieceType);
+        }
     }
 
     public void UpdateFen(string newFen)

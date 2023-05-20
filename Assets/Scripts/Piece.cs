@@ -5,7 +5,7 @@ using UnityEngine;
 
 public abstract class Piece
 {
-    public enum PieceType
+    [SerializeField] public enum PieceType
     {
         Pawn,
         King,
@@ -49,6 +49,26 @@ public abstract class Piece
             default:
                 throw new Exception("Invalid character as argument in method \"GetPieceTypeFromLetter\"");
         };
+    }
+    public static char GetPieceLetter(PieceType type)
+    {
+        switch (type)
+        {
+            case PieceType.Pawn:
+                return 'p';
+            case PieceType.King:
+                return 'k';
+            case PieceType.Knight:
+                return 'n';
+            case PieceType.Bishop:
+                return 'b';
+            case PieceType.Rook:
+                return 'r';
+            case PieceType.Queen:
+                return 'q';
+            default:
+                throw new Exception("Invalid type as argument in method \"GetPieceLetter\"");
+        }
     }
     public static PieceColor GetOppositeColor(PieceColor color)
     {
