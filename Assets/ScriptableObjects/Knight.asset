@@ -12,12 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cbbdd6c16543364398074342cab622f, type: 3}
   m_Name: Knight
   m_EditorClassIdentifier: 
-  pieceClass:
-    pieceTypeSO: {fileID: 11400000}
-    type: 2
-    color: 0
-    pieceGameObject: {fileID: 0}
-  pieceName: Knight
+  pieceType: 2
   piecePrefab: {fileID: 5945448033776692847, guid: d38941e1a432bd54ba396565884b55a7,
     type: 3}
   whitePieceSprite: {fileID: 21300000, guid: 74d00db97b359e24ab71c5fa5cc07af4, type: 3}

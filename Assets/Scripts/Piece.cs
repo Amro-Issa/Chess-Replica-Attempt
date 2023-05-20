@@ -8,11 +8,11 @@ public abstract class Piece
     public enum PieceType
     {
         Pawn,
+        King,
         Knight,
         Bishop,
         Rook,
         Queen,
-        King,
     }
 
     public enum PieceColor
@@ -36,6 +36,8 @@ public abstract class Piece
         {
             case 'p':
                 return PieceType.Pawn;
+            case 'k':
+                return PieceType.King;
             case 'n':
                 return PieceType.Knight;
             case 'b':
@@ -44,8 +46,6 @@ public abstract class Piece
                 return PieceType.Rook;
             case 'q':
                 return PieceType.Queen;
-            case 'k':
-                return PieceType.King;
             default:
                 throw new Exception("Invalid character as argument in method \"GetPieceTypeFromLetter\"");
         };
@@ -74,7 +74,7 @@ public abstract class Piece
             moves.AddRange(piece.GetLegalMoves());
         }
 
-        return moves.Count == 0 ? null : moves;  //make it so that the method returns an empty list instead of <null> if there are no legal moves for any piece of color <color>
+        return moves.Count == 0 ? new List<int>() : moves;  //make it so that the method returns an empty list instead of <null> if there are no legal moves for any piece of color <color>
     }
     public static List<int> GetAllRawMoves(PieceColor color)
     {
@@ -96,7 +96,7 @@ public abstract class Piece
             }
         }
 
-        return moves.Count == 0 ? null : moves;  //fix: make it so that the method returns an empty list instead of <null> if there are no legal moves for any piece of color <color>
+        return moves.Count == 0 ? new List<int>() : moves;  //fix: make it so that the method returns an empty list instead of <null> if there are no legal moves for any piece of color <color>
     }
     public static List<int> GetAllDefendedSquares(PieceColor color)
     {
@@ -236,7 +236,7 @@ public abstract class Piece
                 }
             }
 
-            if (GetAllLegalMoves(GetOppositeColor(color)) == null)
+            if (GetAllLegalMoves(GetOppositeColor(color)).Count == 0)
             {
                 //if enemy has no legal moves (checkmate)
                 MoveManager.GameOver = true;
@@ -248,7 +248,7 @@ public abstract class Piece
                 Debug.Log($"Number of checkers: {MoveManager.checkers.Count}");
             }
         }
-        else if (GetAllLegalMoves(GetOppositeColor(color)) == null)
+        else if (GetAllLegalMoves(GetOppositeColor(color)).Count == 0)
         {
             //if enemy is not under check and has no legal moves (stalemate)
             MoveManager.GameOver = true;
@@ -298,7 +298,7 @@ public abstract class Piece
     public abstract List<int> GetRawMoves(bool absolute = false);
 }
 
-public sealed class Pawn : Piece
+public class Pawn : Piece
 {
     public static Square enPassantSquare;
     public static Pawn enPassantPawn;
@@ -308,6 +308,8 @@ public sealed class Pawn : Piece
         enPassantSquare = null;
         enPassantPawn = null;
     }
+
+    public static Pawn pawnToBePromoted;
 
     public Pawn(PieceColor color, Square square) : base(PieceType.Pawn, color, square)
     {
@@ -338,7 +340,8 @@ public sealed class Pawn : Piece
         {
             if((color == PieceColor.White && square.Rank == Board.MaxRank) || (color == PieceColor.Black && square.Rank == 0))
             {
-                Promote(PieceType.Queen);
+                pawnToBePromoted = this;
+                UI.PawnPromotionInProgress = true;
             }
         }
     }
@@ -433,7 +436,7 @@ public sealed class Pawn : Piece
     /// Promotes this pawn to the given piece type
     /// </summary>
     /// <param name="type">the piece to promote to</param>
-    protected void Promote(PieceType type)
+    public void Promote(PieceType type)
     {
         MoveManager.DestroyPiece(this);
         Piece piece;

@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "ScriptableObjects/PieceType")]
 public class PieceTypeSO : ScriptableObject
 {
-    public string pieceName;
+    public Piece.PieceType pieceType;
 
     public GameObject piecePrefab;
 

@@ -12,12 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cbbdd6c16543364398074342cab622f, type: 3}
   m_Name: Queen
   m_EditorClassIdentifier: 
-  pieceClass:
-    pieceTypeSO: {fileID: 11400000}
-    type: 5
-    color: 0
-    pieceGameObject: {fileID: 0}
-  pieceName: Queen
+  pieceType: 5
   piecePrefab: {fileID: 4086585349564444924, guid: 01e4a8c3a3e8f81479f1b54632b7d40b,
     type: 3}
   whitePieceSprite: {fileID: 21300000, guid: 8ba73e5ee75bc25478e0645f91b77427, type: 3}

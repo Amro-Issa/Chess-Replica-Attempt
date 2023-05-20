@@ -60,7 +60,7 @@ public class Board : MonoBehaviour
 
         for (int i = 0; i < Enum.GetNames(typeof(Piece.PieceType)).Length; i++)
         {
-            PieceTypeToSO.Add((Piece.PieceType)i, pieceTypeSOArray[i]);
+            PieceTypeToSO.Add(pieceTypeSOArray[i].pieceType, pieceTypeSOArray[i]);
         }
 
         CreateBoard();
@@ -206,6 +206,9 @@ public class Board : MonoBehaviour
                     case Piece.PieceType.Pawn:
                         new Pawn(color, square);
                         break;
+                    case Piece.PieceType.King:
+                        new King(color, square);
+                        break;
                     case Piece.PieceType.Knight:
                         new Knight(color, square);
                         break;
@@ -217,9 +220,6 @@ public class Board : MonoBehaviour
                         break;
                     case Piece.PieceType.Queen:
                         new Queen(color, square);
-                        break;
-                    case Piece.PieceType.King:
-                        new King(color, square);
                         break;
                     default:
                         throw new Exception();

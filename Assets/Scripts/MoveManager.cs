@@ -19,6 +19,7 @@ public class MoveManager : MonoBehaviour
     public static bool PawnPromotionAllowed { get; set; } = true;
     public static bool GameOver { get; set; } = false;
 
+
     [SerializeField] private LayerMask squaresLayer;
     [SerializeField] private GameObject audioSources;
 
@@ -31,7 +32,7 @@ public class MoveManager : MonoBehaviour
 
     void Update()
     {
-        if (!GameOver)
+        if (!GameOver && !UI.PawnPromotionInProgress)
         {
             CheckForPieceSelectionOrMove(playerTurn);
         }

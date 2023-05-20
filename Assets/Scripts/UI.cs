@@ -23,13 +23,60 @@ public class UI : MonoBehaviour
             Instance.SettingsGameObject.SetActive(value);
         }
     }
+    
+    private static bool _pawnPromotionInProgress = false;
+    public static bool PawnPromotionInProgress
+    {
+        get
+        {
+            return _pawnPromotionInProgress;
+        }
+        set
+        {
+            if (value)
+            {
+                for(int i = 1; i < Instance.PawnPromotionGUI.transform.childCount; i++)
+                {
+                    GameObject selection = Instance.PawnPromotionGUI.transform.GetChild(i).gameObject;
+                    Piece.PieceType type;
+                    switch (selection.name)
+                    {
+                        case "Bishop":
+                            type = Piece.PieceType.Bishop;
+                            break;
+                        case "Knight":
+                            type = Piece.PieceType.Knight;
+                            break;
+                        case "Rook":
+                            type = Piece.PieceType.Rook;
+                            break;
+                        case "Queen":
+                            type = Piece.PieceType.Queen;
+                            break;
+                        default:
+                            throw new Exception();
+                    }
+                    selection.GetComponent<Image>().sprite = Pawn.pawnToBePromoted.color == Piece.PieceColor.White ? Board.PieceTypeToSO[type].whitePieceSprite : Board.PieceTypeToSO[type].blackPieceSprite;
+                }
+            }
+            else
+            {
+                Pawn.pawnToBePromoted = null;
+            }
+
+            _pawnPromotionInProgress = value;
+            Instance.PawnPromotionGUI.SetActive(value);
+            IsSettingsActive = !value;
+        }
+    }
 
     [SerializeField] private GameObject SettingsGameObject;
     [SerializeField] private GameObject RandomPositionSettingsGameObject;
     [SerializeField] private Toggle[] CheckmarkToggles;
     [SerializeField] private Toggle[] RulesToggles;
     [SerializeField] private Text LegalMovesDisplay;
-    
+    [SerializeField] private GameObject PawnPromotionGUI;
+
 
     void Start()
     {
@@ -38,7 +85,7 @@ public class UI : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Tab))
+        if (!PawnPromotionInProgress && Input.GetKeyDown(KeyCode.Tab))
         {
             Board.Instance.spritesParent.SetActive(!Board.Instance.spritesParent.activeInHierarchy);
             LegalMovesDisplay.gameObject.SetActive(!LegalMovesDisplay.gameObject.activeInHierarchy);
@@ -104,6 +151,12 @@ public class UI : MonoBehaviour
         }
         x += $"\n This piece {(isPinned ? "is" : "is not")} pinned";
         Instance.LegalMovesDisplay.text = x;
+    }
+
+    public void SelectPawnPromotion(PieceTypeSO pieceTypeSO)
+    {
+        Pawn.pawnToBePromoted.Promote(pieceTypeSO.pieceType);
+        PawnPromotionInProgress = false;
     }
 
     public void Reset()
