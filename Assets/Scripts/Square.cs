@@ -7,14 +7,14 @@ public class Square : MonoBehaviour
 {
     public enum Direction
     {//comment represents standard for 8x8 board
-        TopLeft = Board.MaxFile, //7
+        TopLeft = Top + Left, //7
         Top = Board.FileCount, //8
-        TopRight = Board.FileCount + 1, //9
+        TopRight = Top + Right, //9
         Left = -1,
         Right = 1,
-        BottomLeft = -Board.FileCount - 1, //-9
+        BottomLeft = Bottom + Left, //-9
         Bottom = -Board.FileCount, //-8
-        BottomRight = -Board.MaxFile, //-7
+        BottomRight = Bottom + Right, //-7
     }
 
     public enum SquareColor

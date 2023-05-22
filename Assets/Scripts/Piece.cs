@@ -5,7 +5,7 @@ using UnityEngine;
 
 public abstract class Piece
 {
-    [SerializeField] public enum PieceType
+    public enum PieceType
     {
         Pawn,
         King,
@@ -625,7 +625,10 @@ public sealed class King : Piece
 
         foreach (Piece checker in MoveManager.checkers)
         {
-            checkersRawMoves.AddRange(checker.GetRawMoves(true));
+            if (!(checker is Pawn))
+            {
+                checkersRawMoves.AddRange(checker.GetRawMoves(true));
+            }
         }
 
         foreach (int move in legalMoves.ToArray())
