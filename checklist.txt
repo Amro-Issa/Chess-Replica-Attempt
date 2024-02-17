@@ -1,0 +1,11 @@
+normal movement
+double pawn movement
+pawn capture
+pawn blocked from moving
+pinning
+castling
+prevention of castling due to check/path-guarding of another piece
+checking
+pawn promotion
+check upon pawn promotion
+checkmate
