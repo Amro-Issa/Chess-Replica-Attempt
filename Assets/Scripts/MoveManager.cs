@@ -112,7 +112,7 @@ public class MoveManager : MonoBehaviour
     {
         if (targetSquare.piece == null)
         {
-            PlayMoveSound();
+            //PlayMoveSound();
         }
         else
         {
