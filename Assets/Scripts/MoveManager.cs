@@ -4,9 +4,20 @@ using UnityEngine;
 
 public class MoveManager : MonoBehaviour
 {
-    public static MoveManager Instance;
+    public static MoveManager Instance { get; private set; }
 
-    public static Piece.PieceColor playerTurn = Piece.PieceColor.White;
+    private static Piece.PieceColor playerTurn;
+    public static Piece.PieceColor PlayerTurn
+    {
+        get => playerTurn;
+        set
+        {
+            playerTurn = value;
+
+            UI.Instance.ToggleTurnText.text = value.ToString();
+        }
+    }
+
     private static bool pieceSelected = false;
     private static Piece selectedPiece = null;
     private static List<int> selectedPieceLegalMoves = null;
@@ -23,18 +34,20 @@ public class MoveManager : MonoBehaviour
     [SerializeField] private LayerMask squaresLayer;
     [SerializeField] private GameObject audioSources;
 
-    void Start()
+    void Awake()
     {
         if (Instance != null) Destroy(this);
 
         Instance = this;
+
+        PlayerTurn = Piece.PieceColor.White;
     }
 
     void Update()
     {
         if (!GameOver && !UI.PawnPromotionInProgress)
         {
-            CheckForPieceSelectionOrMove(playerTurn);
+            CheckForPieceSelectionOrMove(PlayerTurn);
         }
     }
 
@@ -63,7 +76,7 @@ public class MoveManager : MonoBehaviour
                     if (selectedPiece.GetLegalMoves().Contains(squareHit.SquareNumber)) //seeing if the destination square is a legal square that the piece can move to
                     {
                         PlayMove(selectedPiece, squareHit);
-                        playerTurn = Piece.GetOppositeColor(playerTurn);
+                        PlayerTurn = Piece.GetOppositeColor(PlayerTurn);
 
                         #region
                         /*if (playerTurn == Piece.PieceColor.White)
@@ -178,7 +191,7 @@ public class MoveManager : MonoBehaviour
             fieldInfo.SetValue(fieldInfo.FieldType, default(fieldInfo.FieldType));
         }*/
 
-        playerTurn = Piece.PieceColor.White;
+        PlayerTurn = Piece.PieceColor.White;
         pieceSelected = false;
         selectedPiece = null;
         selectedPieceLegalMoves = null;

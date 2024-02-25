@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Board : MonoBehaviour
 {
-    public static Board Instance;
+    public static Board Instance { get; private set; }
 
     [SerializeField] private GameObject squarePrefab, squaresParent;
     public GameObject whitePiecesParent, blackPiecesParent;
@@ -28,6 +28,7 @@ public class Board : MonoBehaviour
     public const int MaxFile = FileCount - 1;
     public const int MaxRank = RankCount - 1;
     public const int MaxSquare = SquareCount - 1;
+
     private const string PieceLetters = "pnbrqk"; //note: convert this to a dictionary with Piece.PieceType as they key type so that it is safer and cleaner
 
     public static HashSet<Piece.PieceType> RandomGenerationExclusions = new HashSet<Piece.PieceType>();
@@ -182,7 +183,7 @@ public class Board : MonoBehaviour
         //method assumes FEN is valid
         ClearBoard();
 
-        MoveManager.playerTurn = Piece.PieceColor.White;
+        MoveManager.PlayerTurn = Piece.PieceColor.White;
 
         //fen starts from square 56 for a 8x8 board
         int currentSquareNumber = SquareCount - FileCount;

@@ -642,7 +642,7 @@ public sealed class King : Piece
 
     public override List<int> GetRawMoves(bool absolute = false)
     {
-        return GetRawMovesV2(absolute, includeCastleMoves: false);
+        return GetRawMovesV2(absolute, includeCastleMoves: true);
     }
 
     public override void Move(Square targetSquare)
@@ -661,16 +661,22 @@ public sealed class King : Piece
     {
         //castleType = square.squareNumber > rook.square.squareNumber ? CastleType.QueenSide : CastleType.KingSide;
 
+        //need to check that:
+        //-king and rook have not moved
+        //-king is not in check
+        //-path between them is clear
+        //-king's path (2 squares) between them is not guarded by enemy piece(s)
+
         rook = null;
         kingCastleSquare = null;
         rookCastleSquare = null;
 
         if (!hasMoved && kingPieceUnderCheck != this)
         {
-            int num = square.SquareNumber + (castleType == CastleType.QueenSide ? -4 : 3);
-            if (Square.IsSquareInRange(num))
+            int rookSquareNum = square.SquareNumber + (castleType == CastleType.QueenSide ? -4 : 3);
+            if (Square.IsSquareInRange(rookSquareNum))
             {
-                rook = (Board.Squares[num].piece is Rook r) ? r : null;
+                rook = (Board.Squares[rookSquareNum].piece is Rook r) ? r : null;
             
                 if (rook != null && !rook.hasMoved)
                 {
@@ -678,16 +684,15 @@ public sealed class King : Piece
                     {
                         int add = castleType == CastleType.QueenSide ? -3 : 3;
 
-                        //check if path is guarded by enemy piece(s) //GETS THE SQUARES BETWEEN THE KING AND THE SQUARE 3 SQUARES BESIDE IT (NOT FROM KING TO ROOK) SO THAT YOU CAN STILL CASTLE DESPITE IF THERE IS A PIECE BLOCKING THE ROOKS PATH BUT NOT THE KING's
-                        if (Square.AreSquaresGuarded(GetOppositeColor(color), Square.GetSquaresInBetween(square.SquareNumber, square.SquareNumber + add)))
+                        //check that path is not guarded by enemy piece(s)
+                        //GETS THE SQUARES BETWEEN THE KING AND THE SQUARE 3 SQUARES BESIDE IT (NOT FROM KING TO ROOK) SO THAT YOU CAN STILL CASTLE DESPITE IF THERE IS A PIECE BLOCKING THE ROOKS PATH BUT NOT THE KING's
+                        if (!Square.AreSquaresGuarded(GetOppositeColor(color), Square.GetSquaresInBetween(square.SquareNumber, square.SquareNumber + add)))
                         {
-                            return false;
+                            kingCastleSquare = castleType == CastleType.QueenSide ? Board.Squares[square.SquareNumber - 2] : Board.Squares[square.SquareNumber + 2];
+                            rookCastleSquare = castleType == CastleType.QueenSide ? Board.Squares[square.SquareNumber - 1] : Board.Squares[square.SquareNumber + 1];
+
+                            return true;
                         }
-
-                        kingCastleSquare = castleType == CastleType.QueenSide ? Board.Squares[square.SquareNumber - 2] : Board.Squares[square.SquareNumber + 2];
-                        rookCastleSquare = castleType == CastleType.QueenSide ? Board.Squares[square.SquareNumber - 1] : Board.Squares[square.SquareNumber + 1];
-
-                        return true;
                     }
                 }
             }

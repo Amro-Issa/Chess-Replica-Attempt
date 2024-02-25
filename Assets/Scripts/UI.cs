@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class UI : MonoBehaviour
 {
-    public static UI Instance;
+    public static UI Instance { get; private set; }
 
     public static string currentFenInputFieldValue;
 
@@ -73,12 +73,19 @@ public class UI : MonoBehaviour
     [SerializeField] private GameObject SettingsGameObject;
     [SerializeField] private GameObject RandomPositionSettingsGameObject;
     [SerializeField] private Toggle[] RulesToggles;
+
+    [SerializeField] private GameObject LegalMovesParent;
     [SerializeField] private Text LegalMovesDisplay;
+
     [SerializeField] private GameObject PawnPromotionGUI;
 
-    void Start()
+    public Button ToggleTurnButton;
+    public Text ToggleTurnText;
+
+    void Awake()
     {
         Instance = this;
+        ToggleTurnButton.onClick.AddListener(() => MoveManager.PlayerTurn = MoveManager.PlayerTurn == Piece.PieceColor.White ? Piece.PieceColor.Black : Piece.PieceColor.White);
     }
 
     void Update()
@@ -86,7 +93,7 @@ public class UI : MonoBehaviour
         if (!PawnPromotionInProgress && Input.GetKeyDown(KeyCode.Tab))
         {
             Board.Instance.spritesParent.SetActive(!Board.Instance.spritesParent.activeInHierarchy);
-            LegalMovesDisplay.gameObject.SetActive(!LegalMovesDisplay.gameObject.activeInHierarchy);
+            LegalMovesParent.SetActive(!LegalMovesParent.activeInHierarchy);
             IsSettingsActive = !IsSettingsActive;
 
             RandomPositionSettingsGameObject.SetActive(!RandomPositionSettingsGameObject.activeInHierarchy);
