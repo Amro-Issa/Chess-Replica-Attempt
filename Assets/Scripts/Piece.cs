@@ -21,6 +21,19 @@ public abstract class Piece
         Black
     }
 
+    //public readonly struct PieceStruct
+    //{
+    //    readonly PieceColor color;
+    //    readonly PieceType type;
+
+    //    public PieceStruct(PieceColor color, PieceType type)
+    //    {
+    //        this.color = color;
+    //        this.type = type;
+    //    }
+    //}
+
+
     public readonly PieceType type;
     public readonly PieceColor color;
     public readonly PieceTypeSO pieceTypeSO = null;
@@ -70,6 +83,28 @@ public abstract class Piece
                 throw new Exception("Invalid type as argument in method \"GetPieceLetter\"");
         }
     }
+
+    public static Piece CreateNewPiece(PieceColor color, PieceType type, Square square)
+    {
+        switch (type)
+        {
+            case PieceType.Pawn:
+                return new Pawn(color, square);
+            case PieceType.King:
+                return new King(color, square);
+            case PieceType.Knight:
+                return new Knight(color, square);
+            case PieceType.Bishop:
+                return new Bishop(color, square);
+            case PieceType.Rook:
+                return new Rook(color, square);
+            case PieceType.Queen:
+                return new Queen(color, square);
+            default:
+                throw new Exception();
+        }
+    }
+
     public static PieceColor GetOppositeColor(PieceColor color)
     {
         if (color == PieceColor.White)

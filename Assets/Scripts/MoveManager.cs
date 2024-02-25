@@ -31,7 +31,7 @@ public class MoveManager : MonoBehaviour
     public static bool GameOver { get; set; } = false;
 
 
-    [SerializeField] private LayerMask squaresLayer;
+    public LayerMask squaresLayer;
     [SerializeField] private GameObject audioSources;
 
     void Awake()

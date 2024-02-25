@@ -114,8 +114,13 @@ public class Square : MonoBehaviour
         }
     }
 
-    public void Unoccupy()
+    public void Unoccupy(bool destroyPiece = false)
     {
+        if (destroyPiece && piece != null)
+        {
+            Destroy(piece.gameObj);
+        }
+
         piece = null;
     }
 

@@ -8,6 +8,7 @@ public class UI : MonoBehaviour
 {
     public static UI Instance { get; private set; }
 
+    [SerializeField] public GameObject canvas;
     public static string currentFenInputFieldValue;
 
     private static bool _isSettingsActive = true;
@@ -74,7 +75,6 @@ public class UI : MonoBehaviour
     [SerializeField] private GameObject RandomPositionSettingsGameObject;
     [SerializeField] private Toggle[] RulesToggles;
 
-    [SerializeField] private GameObject LegalMovesParent;
     [SerializeField] private Text LegalMovesDisplay;
 
     [SerializeField] private GameObject PawnPromotionGUI;
@@ -93,7 +93,7 @@ public class UI : MonoBehaviour
         if (!PawnPromotionInProgress && Input.GetKeyDown(KeyCode.Tab))
         {
             Board.Instance.spritesParent.SetActive(!Board.Instance.spritesParent.activeInHierarchy);
-            LegalMovesParent.SetActive(!LegalMovesParent.activeInHierarchy);
+            Board.Instance.GameUI.SetActive(!Board.Instance.GameUI.activeInHierarchy);
             IsSettingsActive = !IsSettingsActive;
 
             RandomPositionSettingsGameObject.SetActive(!RandomPositionSettingsGameObject.activeInHierarchy);

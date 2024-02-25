@@ -11,4 +11,16 @@ public class PieceTypeSO : ScriptableObject
 
     public Sprite whitePieceSprite;
     public Sprite blackPieceSprite;
+
+    //public Dictionary<Piece.PieceColor, Sprite> colorToSprite;
+
+    //public PieceTypeSO()
+    //{
+
+    //    colorToSprite = new Dictionary<Piece.PieceColor, Sprite>
+    //    {
+    //        {Piece.PieceColor.White, whitePieceSprite},
+    //        {Piece.PieceColor.Black, blackPieceSprite}
+    //    };
+    //}
 }

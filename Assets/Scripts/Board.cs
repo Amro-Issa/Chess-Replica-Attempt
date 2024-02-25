@@ -6,6 +6,8 @@ public class Board : MonoBehaviour
 {
     public static Board Instance { get; private set; }
 
+    public GameObject GameUI;
+
     [SerializeField] private GameObject squarePrefab, squaresParent;
     public GameObject whitePiecesParent, blackPiecesParent;
     public GameObject spritesParent;
@@ -167,14 +169,14 @@ public class Board : MonoBehaviour
         MoveManager.ResetFields();
         UI.Instance?.Reset();
 
-        foreach (Square squareClass in Squares.Values)
+        foreach (Square square in Squares.Values)
         {
-            if (squareClass.piece?.gameObj != null)
+            if (square.piece?.gameObj != null)
             {
-                Destroy(squareClass.piece.gameObj);
+                Destroy(square.piece.gameObj);
             }
 
-            squareClass.Unoccupy();
+            square.Unoccupy();
         }
     }
 
@@ -182,8 +184,6 @@ public class Board : MonoBehaviour
     {
         //method assumes FEN is valid
         ClearBoard();
-
-        MoveManager.PlayerTurn = Piece.PieceColor.White;
 
         //fen starts from square 56 for a 8x8 board
         int currentSquareNumber = SquareCount - FileCount;
