@@ -15,6 +15,8 @@ public class MoveManager : MonoBehaviour
             playerTurn = value;
 
             UI.Instance.ToggleTurnText.text = value.ToString();
+
+            if (AutoChangeView) UI.ChangeView(playerTurn);
         }
     }
 
@@ -28,6 +30,18 @@ public class MoveManager : MonoBehaviour
     public static bool CheckAllowed { get; set; } = true;
     public static bool EnPassantAllowed { get; set; } = true;
     public static bool PawnPromotionAllowed { get; set; } = true;
+
+    private static bool _autoChangeView;
+    public static bool AutoChangeView 
+    {
+        get => _autoChangeView;
+        set
+        {
+            _autoChangeView = value;
+            UI.Instance.autoChangeViewToggle.isOn = value;
+        }
+    }
+
     public static bool GameOver { get; set; } = false;
 
 

@@ -16,6 +16,12 @@ public class Test : MonoBehaviour
             print(x);
         }
     }
+
+    private void Awake()
+    {
+        
+    }
+
     private void Update()
     {
         //if (Input.GetKeyDown(KeyCode.N))

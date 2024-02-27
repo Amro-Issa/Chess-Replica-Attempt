@@ -94,6 +94,7 @@ public class UI : MonoBehaviour
 
     private const KeyCode randomPosMenuKey = KeyCode.Tab;
     private const KeyCode dragAndDropKey = KeyCode.X;
+    private const KeyCode changeViewKey = KeyCode.Space;
 
     public Button ToggleTurnButton;
     public Text ToggleTurnText;
@@ -101,17 +102,22 @@ public class UI : MonoBehaviour
     [SerializeField] private GameObject boardSpritesParent;
     private readonly List<Menu> menusRequiringBoard = new List<Menu>{ Menu.Game, Menu.DragAndDrop };
 
+    public Toggle autoChangeViewToggle;
+
     void Awake()
     {
         Instance = this;
         ToggleTurnButton.onClick.AddListener(() => MoveManager.PlayerTurn = MoveManager.PlayerTurn == Piece.PieceColor.White ? Piece.PieceColor.Black : Piece.PieceColor.White);
+
+        autoChangeViewToggle.onValueChanged.AddListener((bool state) => MoveManager.AutoChangeView = state);
 
         HelpText.text = $"- Press {Board.clearBoardKey} to clear board" +
              $"\n- Press {Board.defaultBoardKey} to generate default starting position" +
              $"\n- Press {Board.randomBoardKey} to generate random starting position" +
              "\n- To generate a specific position, enter the FEN in the input field above" +
              $"\n- Press {randomPosMenuKey} to adjust which pieces are included in the random generation" +
-             $"\n- Press {dragAndDropKey} to open the drag and drop menu";
+             $"\n- Press {dragAndDropKey} to open the drag and drop menu" +
+             $"\n- Press {changeViewKey} to change board view";
     }
 
     void Update()
@@ -125,6 +131,10 @@ public class UI : MonoBehaviour
             else if (Input.GetKeyDown(dragAndDropKey))
             {
                 OpenMenu(DragAndDropMenuObject.activeInHierarchy ? Menu.Game : Menu.DragAndDrop);
+            }
+            else if (Input.GetKeyDown(changeViewKey))
+            {
+                ChangeView();
             }
         }
     }
@@ -211,6 +221,38 @@ public class UI : MonoBehaviour
 
         bool requiresBoard = menusRequiringBoard.Contains(menu);
         boardSpritesParent.SetActive(requiresBoard);
+    }
+
+    public static void ChangeView()
+    {
+        foreach (List<Piece> lst in new List<Piece>[] { Board.WhitePieces, Board.BlackPieces })
+        {
+            foreach (Piece piece in lst)
+            {
+                piece.gameObj.transform.Rotate(Vector3.forward * 180);
+            }
+        }
+
+        Camera.main.transform.Rotate(Vector3.forward * 180);
+    }
+
+    public static void ChangeView(Piece.PieceColor color)
+    {
+        Camera.main.transform.rotation = Quaternion.identity; //resets camera rotation
+
+        foreach (List<Piece> lst in new List<Piece>[] { Board.WhitePieces, Board.BlackPieces })
+        {
+            foreach (Piece piece in lst)
+            {
+                piece.gameObj.transform.rotation = Quaternion.identity;
+            }
+        }
+
+        //rotate camera if black, otherwise, do nothing because it is already on white
+        if (color == Piece.PieceColor.Black)
+        {
+            ChangeView();
+        }
     }
 
     public void Reset()

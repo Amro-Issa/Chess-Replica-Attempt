@@ -32,14 +32,14 @@ public class Board : MonoBehaviour
 
     public static HashSet<Piece.PieceType> RandomGenerationExclusions = new HashSet<Piece.PieceType>();
 
-    private static List<Piece> WhitePieces
+    public static List<Piece> WhitePieces
     {
         get
         {
             return GetPieces(Piece.PieceColor.White);
         }
     }
-    private static List<Piece> BlackPieces
+    public static List<Piece> BlackPieces
     {
         get
         {
