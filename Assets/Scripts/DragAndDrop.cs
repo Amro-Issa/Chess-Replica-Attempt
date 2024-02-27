@@ -36,6 +36,12 @@ public class DragAndDrop : MonoBehaviour
                 Drop();
                 active = false;
             }
+            else if (Input.GetKeyDown(KeyCode.Mouse1))
+            {
+                Destroy(draggedPiece);
+                draggedPiece = null;
+                active = false;
+            }
         }
     }
 
