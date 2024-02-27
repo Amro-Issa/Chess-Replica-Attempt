@@ -6,7 +6,8 @@ using UnityEngine;
 public class Square : MonoBehaviour
 {
     public enum Direction
-    {//comment represents standard for 8x8 board
+    {
+        //comment represents standard for 8x8 board
         TopLeft = Top + Left, //7
         Top = Board.FILE_COUNT, //8
         TopRight = Top + Right, //9

@@ -106,10 +106,12 @@ public class UI : MonoBehaviour
         Instance = this;
         ToggleTurnButton.onClick.AddListener(() => MoveManager.PlayerTurn = MoveManager.PlayerTurn == Piece.PieceColor.White ? Piece.PieceColor.Black : Piece.PieceColor.White);
 
-        HelpText.text = $"- Press '{Board.clearBoardKey}' to clear board" +
-             $"\n- Press '{Board.defaultBoardKey}' to generate default starting position" +
-             $"\n- Press '{Board.randomBoardKey}' to generate random starting position" +
-             "\n- To generate a specific position, enter the FEN in the input field above";
+        HelpText.text = $"- Press {Board.clearBoardKey} to clear board" +
+             $"\n- Press {Board.defaultBoardKey} to generate default starting position" +
+             $"\n- Press {Board.randomBoardKey} to generate random starting position" +
+             "\n- To generate a specific position, enter the FEN in the input field above" +
+             $"\n- Press {randomPosMenuKey} to adjust which pieces are included in the random generation" +
+             $"\n- Press {dragAndDropKey} to open the drag and drop menu";
     }
 
     void Update()

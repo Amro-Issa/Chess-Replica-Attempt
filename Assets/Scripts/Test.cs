@@ -43,12 +43,11 @@ public class Test : MonoBehaviour
         //    print("let go of mouse");
         //    flag = false;
         //}
-
-        Test1();
     }
 
     private void Test1()
     {
+        //highlights boundary square of selected square with given direction
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             if (highlightedSquare != null)
