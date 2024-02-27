@@ -217,13 +217,13 @@ public abstract class Piece
         return moves;
     }
     
-    public bool IsPinned(out Piece pinner, out List<int> squaresOfLineOfAttack)
+    public bool IsPinned(out Piece pinner, out List<int> lineOfAttackSquares)
     {
         pinner = null;
-        squaresOfLineOfAttack = null;
+        lineOfAttackSquares = null;
 
         King friendly_king = Board.GetKing(color);
-        //checking if the king and the piece are reachable and if so, getting the offset
+        //checking if the king and the piece are reachable, and if so, getting the offset
         if (Square.TryGetOffset(friendly_king.square.SquareNumber, square.SquareNumber, out int offset, out _))
         {
             Square.Direction direction = (Square.Direction)offset;
@@ -254,7 +254,7 @@ public abstract class Piece
                         if (thisPieceReached && piece.type == PieceType.Queen || (piece.type == PieceType.Rook && Square.OrthogonalOffsets.Contains(direction)) || (piece.type == PieceType.Bishop && Square.DiagonalOffsets.Contains(direction)))
                         {
                             pinner = Board.Squares[square].piece;
-                            squaresOfLineOfAttack = Square.GetSquaresInBetween(friendly_king.square.SquareNumber, square, inclusiveOfSquare2: true);
+                            lineOfAttackSquares = Square.GetSquaresInBetween(friendly_king.square.SquareNumber, square, inclusiveOfSquare2: true);
                             return true;
                         }
 
@@ -393,7 +393,7 @@ public class Pawn : Piece
         
         if(MoveManager.PawnPromotionAllowed)
         {
-            if((color == PieceColor.White && square.Rank == Board.MaxRank) || (color == PieceColor.Black && square.Rank == 0))
+            if((color == PieceColor.White && square.Rank == Board.MAX_RANK) || (color == PieceColor.Black && square.Rank == 0))
             {
                 pawnToBePromoted = this;
                 UI.PawnPromotionInProgress = true;
@@ -453,7 +453,7 @@ public class Pawn : Piece
                     return true;
                 }
             }
-            else if (color == PieceColor.Black && (rank == Board.MaxRank || rank == Board.MaxRank - 1)) //rank == Board.maxRank for if a black pawn spawns on the back rank when generating a random position
+            else if (color == PieceColor.Black && (rank == Board.MAX_RANK || rank == Board.MAX_RANK - 1)) //rank == Board.maxRank for if a black pawn spawns on the back rank when generating a random position
             {
                 if (raw == true || !Board.IsSquareOccupied(square.SquareNumber + (int)Square.Direction.Bottom * 2))
                 {

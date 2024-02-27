@@ -16,19 +16,19 @@ public class Board : MonoBehaviour
     public static Dictionary<Piece.PieceType, PieceTypeSO> PieceTypeToSO = new Dictionary<Piece.PieceType, PieceTypeSO>();
     public static Dictionary<int, Square> Squares = new Dictionary<int, Square>();
 
-    public const string StartingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"; //in case you lose the string: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
+    public const string STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"; //in case you lose the string: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
 
-    private const int PlayerCount = 2;
+    private const int PLAYER_COUNT = 2;
     
-    public const int FileCount = 8;
-    public const int RankCount = 8;
-    private const int SquareCount = FileCount * RankCount;
+    public const int FILE_COUNT = 8;
+    public const int RANK_COUNT = 8;
+    private const int SQUARE_COUNT = FILE_COUNT * RANK_COUNT;
 
-    public const int MaxFile = FileCount - 1;
-    public const int MaxRank = RankCount - 1;
-    public const int MaxSquare = SquareCount - 1;
+    public const int MAX_FILE = FILE_COUNT - 1;
+    public const int MAX_RANK = RANK_COUNT - 1;
+    public const int MAX_SQUARE = SQUARE_COUNT - 1;
 
-    private const string PieceLetters = "pnbrqk"; //note: convert this to a dictionary with Piece.PieceType as they key type so that it is safer and cleaner
+    private const string PIECE_LETTERS = "pnbrqk"; //note: convert this to a dictionary with Piece.PieceType as they key type so that it is safer and cleaner
 
     public static HashSet<Piece.PieceType> RandomGenerationExclusions = new HashSet<Piece.PieceType>();
 
@@ -70,7 +70,7 @@ public class Board : MonoBehaviour
         }
 
         CreateBoard();
-        CreatePositionFromFen(StartingFen);
+        CreatePositionFromFen(STARTING_FEN);
     }
 
     void Update()
@@ -83,7 +83,7 @@ public class Board : MonoBehaviour
             }
             else if (Input.GetKeyDown(defaultBoardKey)) //starting pos
             {
-                CreatePositionFromFen(StartingFen);
+                CreatePositionFromFen(STARTING_FEN);
             }
             else if (Input.GetKeyDown(randomBoardKey)) //random pos
             {
@@ -151,13 +151,13 @@ public class Board : MonoBehaviour
             Squares.Clear();
         }
 
-        for (int rank = 0; rank < RankCount; rank++) //file = column
+        for (int rank = 0; rank < RANK_COUNT; rank++) //file = column
         {
-            for (int column = 0; column < FileCount; column++) //rank = row
+            for (int column = 0; column < FILE_COUNT; column++) //rank = row
             {
                 Vector2 spawnPos = new Vector2(column, rank);
                 Square.SquareColor squareColor = (column + rank) % 2 == 0 ? Square.SquareColor.Dark : Square.SquareColor.Light; //if (column + rank) is even, that means that square is black, otherwise it is white
-                int squareNumber = (rank * FileCount) + column;
+                int squareNumber = (rank * FILE_COUNT) + column;
                 
                 CreateSquare(spawnPos, squareColor, squareNumber);
             }
@@ -187,14 +187,14 @@ public class Board : MonoBehaviour
         ClearBoard();
 
         //fen starts from square 56 for a 8x8 board
-        int currentSquareNumber = SquareCount - FileCount;
+        int currentSquareNumber = SQUARE_COUNT - FILE_COUNT;
 
         foreach(char character in fen)
         {
             if (character == '/')
             {
                 //next rank
-                currentSquareNumber -= FileCount * 2;
+                currentSquareNumber -= FILE_COUNT * 2;
             }
             else if (int.TryParse(character.ToString(), out int number))
             {
@@ -241,20 +241,20 @@ public class Board : MonoBehaviour
         {
             bool kingGenerated = false;
 
-            for (int j = 0; j < FileCount * 2; j++) //looping the number of pieces to put on the board (16 times for a board with 8 files)
+            for (int j = 0; j < FILE_COUNT * 2; j++) //looping the number of pieces to put on the board (16 times for a board with 8 files)
             {
-                if (j == FileCount)
+                if (j == FILE_COUNT)
                 {
                     //next row
                     fen += '/';
                 }
 
                 //excluding king piece if one has already been generated
-                int randomIndex = kingGenerated ? UnityEngine.Random.Range(0, PieceLetters.Length - 1) : UnityEngine.Random.Range(0, PieceLetters.Length);
+                int randomIndex = kingGenerated ? UnityEngine.Random.Range(0, PIECE_LETTERS.Length - 1) : UnityEngine.Random.Range(0, PIECE_LETTERS.Length);
 
-                if (PieceLetters[randomIndex] == 'k') kingGenerated = true;
+                if (PIECE_LETTERS[randomIndex] == 'k') kingGenerated = true;
 
-                char character = i == 0 ? PieceLetters[randomIndex] : char.ToUpper(PieceLetters[randomIndex]);
+                char character = i == 0 ? PIECE_LETTERS[randomIndex] : char.ToUpper(PIECE_LETTERS[randomIndex]);
                 fen += character;
             }
 
@@ -263,7 +263,7 @@ public class Board : MonoBehaviour
             {
                 for (int k = 0; k < 4; k++)
                 {
-                    fen += $"/{FileCount}";
+                    fen += $"/{FILE_COUNT}";
                 }
                 fen += "/";
             }
@@ -276,7 +276,7 @@ public class Board : MonoBehaviour
     {
         string pieceCharacters = "";
 
-        foreach(char character in PieceLetters)
+        foreach(char character in PIECE_LETTERS)
         {
             if (!exclusions.Contains(Piece.GetPieceType(character)))
             {
@@ -289,9 +289,9 @@ public class Board : MonoBehaviour
         {
             bool kingGenerated = false;
 
-            for (int j = 0; j < FileCount * 2; j++) //looping the number of pieces to put on the board (16 times for a board with 8 files)
+            for (int j = 0; j < FILE_COUNT * 2; j++) //looping the number of pieces to put on the board (16 times for a board with 8 files)
             {
-                if (j == FileCount)
+                if (j == FILE_COUNT)
                 {
                     //next row
                     fen += '/';
@@ -314,7 +314,7 @@ public class Board : MonoBehaviour
             {
                 for (int k = 0; k < 4; k++)
                 {
-                    fen += $"/{FileCount}";
+                    fen += $"/{FILE_COUNT}";
                 }
                 fen += "/";
             }
@@ -330,14 +330,14 @@ public class Board : MonoBehaviour
         
         foreach (char character in fen)
         {
-            if ((counter >= FileCount && character != '/') || (counter < FileCount && character == '/'))
+            if ((counter >= FILE_COUNT && character != '/') || (counter < FILE_COUNT && character == '/'))
             {
                 return false;
             }
 
-            if (!PieceLetters.Contains(character.ToString().ToLower()))
+            if (!PIECE_LETTERS.Contains(character.ToString().ToLower()))
             {
-                if (!int.TryParse(character.ToString(), out int parsedCharacter) || parsedCharacter <= 0 || parsedCharacter > FileCount) //checks if character is an integer, if it is, checks if it is between 0 (inclusive) and filecount, and if it's not, it's invalid
+                if (!int.TryParse(character.ToString(), out int parsedCharacter) || parsedCharacter <= 0 || parsedCharacter > FILE_COUNT) //checks if character is an integer, if it is, checks if it is between 0 (inclusive) and filecount, and if it's not, it's invalid
                 {
                     if (character != '/')
                     {
@@ -361,7 +361,7 @@ public class Board : MonoBehaviour
             }
         }
 
-        return overallCounter == SquareCount;
+        return overallCounter == SQUARE_COUNT;
     }
 
     public static bool IsSquareOccupied(int squareNum)

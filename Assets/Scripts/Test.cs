@@ -6,6 +6,7 @@ using UnityEngine;
 public class Test : MonoBehaviour
 {
     static bool flag = false;
+    static Square highlightedSquare;
 
     internal static void PrintMoves(List<int> selectedPieceLegalMoves)
     {
@@ -32,15 +33,41 @@ public class Test : MonoBehaviour
         //    }
         //}
 
-        if (Input.GetKeyDown(KeyCode.Mouse0) && !flag)
+        //if (Input.GetKeyDown(KeyCode.Mouse0) && !flag)
+        //{
+        //    print("clicked mouse");
+        //    flag = true;
+        //}
+        //else if (Input.GetKeyUp(KeyCode.Mouse0) && flag)
+        //{
+        //    print("let go of mouse");
+        //    flag = false;
+        //}
+
+        Test1();
+    }
+
+    private void Test1()
+    {
+        if (Input.GetKeyDown(KeyCode.Mouse0))
         {
-            print("clicked mouse");
-            flag = true;
-        }
-        else if (Input.GetKeyUp(KeyCode.Mouse0) && flag)
-        {
-            print("let go of mouse");
-            flag = false;
+            if (highlightedSquare != null)
+            {
+                highlightedSquare.gameObject.GetComponent<SpriteRenderer>().color = highlightedSquare._physicalColor;
+            }
+
+            RaycastHit2D hit = Physics2D.Raycast(Utils.GetMouseWorldPosition(), Vector3.zero, 10, MoveManager.Instance.squaresLayer);
+
+            if (hit.collider != null) //if we actually hit something
+            {
+                Square squareHit = hit.collider.GetComponent<Square>();
+
+                int boundary = Square.GetBoundarySquare(squareHit.SquareNumber, Square.Direction.BottomRight);
+
+                highlightedSquare = Board.Squares[boundary];
+
+                highlightedSquare.gameObject.GetComponent<SpriteRenderer>().color = Color.cyan;
+            }
         }
     }
 }

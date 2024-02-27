@@ -8,12 +8,12 @@ public class Square : MonoBehaviour
     public enum Direction
     {//comment represents standard for 8x8 board
         TopLeft = Top + Left, //7
-        Top = Board.FileCount, //8
+        Top = Board.FILE_COUNT, //8
         TopRight = Top + Right, //9
         Left = -1,
         Right = 1,
         BottomLeft = Bottom + Left, //-9
-        Bottom = -Board.FileCount, //-8
+        Bottom = -Board.FILE_COUNT, //-8
         BottomRight = Bottom + Right, //-7
     }
 
@@ -64,7 +64,7 @@ public class Square : MonoBehaviour
     }
 
     private SquareColor _color;
-    private Color _physicalColor;
+    public Color _physicalColor { get; private set; }
     public SquareColor Color
     {
         get
@@ -165,11 +165,11 @@ public class Square : MonoBehaviour
     #region IsSquareInRange
     public static bool IsSquareInRange(int square)
     {
-        return square >= 0 && square <= Board.MaxSquare;
+        return square >= 0 && square <= Board.MAX_SQUARE;
     }
     public static bool IsSquareInRange(int file, int rank)
     {
-        return file >= 0 && file <= Board.FileCount - 1 && rank >= 0 && rank <= Board.RankCount - 1;
+        return file >= 0 && file <= Board.FILE_COUNT - 1 && rank >= 0 && rank <= Board.RANK_COUNT - 1;
     }
     #endregion
 
@@ -178,16 +178,16 @@ public class Square : MonoBehaviour
     {
         int temp = squareNumber;
 
-        while (temp > Board.FileCount - 1)
+        while (temp > Board.FILE_COUNT - 1)
         {
-            temp -= Board.FileCount;
+            temp -= Board.FILE_COUNT;
         }
 
         return temp;
     }
     public static int GetRank(int squareNumber)
     {
-        return squareNumber / Board.FileCount;
+        return squareNumber / Board.FILE_COUNT;
     }
     public static int GetFileDifference(int square1, int square2, bool absoluteValue = true)
     {
@@ -202,7 +202,7 @@ public class Square : MonoBehaviour
     #region GetOrTryGetSquare
     public static int GetSquare(int file, int rank)
     {
-        return rank * Board.FileCount + file; //(file * Board.rankCount + rank) also works
+        return rank * Board.FILE_COUNT + file; //(file * Board.rankCount + rank) also works
     }
     public static int GetSquare(int referenceSquare, Direction direction)
     {
@@ -235,47 +235,35 @@ public class Square : MonoBehaviour
     {
         int file = GetFile(referenceSquare);
         int rank = GetRank(referenceSquare);
-        int min = Math.Min(file, rank);
-        int max = Math.Max(file, rank);
-
-        int temp = referenceSquare;
 
         int multiplier = 0;
 
         switch (direction)
         {
-            case Direction.Left: //
+            case Direction.Left:
                 multiplier = file;
                 break;
-            case Direction.Right: //
-                multiplier = Board.FileCount - 1 - file;
+            case Direction.Right:
+                multiplier = Board.MAX_FILE - file;
                 break;
-            case Direction.Bottom: //
+            case Direction.Bottom:
                 multiplier = rank;
                 break;
-            case Direction.Top: //
-                multiplier = Board.RankCount - 1 - rank;
+            case Direction.Top:
+                multiplier = Board.MAX_RANK - rank;
                 break;
-            case Direction.BottomLeft: //
-                multiplier = min;
+            case Direction.BottomLeft:
+                multiplier = Math.Min(file, rank);
                 break;
             case Direction.TopLeft:
-                multiplier = Board.RankCount - 2 - max;
+                multiplier = Math.Min(file, Board.MAX_RANK - rank);
                 break;
             case Direction.BottomRight:
-                while (GetFile(temp) != Board.FileCount - 1 && GetRank(temp) != 0)
-                {
-                    temp += (int)direction;
-                }
-
-                return temp;
-            case Direction.TopRight: //
-                while (GetFile(temp) != Board.FileCount - 1 && GetRank(temp) != Board.RankCount - 1)
-                {
-                    temp += (int)direction;
-                }
-
-                return temp;
+                multiplier = Math.Min(Board.MAX_FILE - file, rank);
+                break;
+            case Direction.TopRight:
+                multiplier = Math.Min(Board.MAX_FILE - file, Board.MAX_RANK - rank);
+                break;
         }
 
         return referenceSquare + (int)direction * multiplier;
@@ -373,7 +361,7 @@ public class Square : MonoBehaviour
     /// <returns></returns>
     public static int GetOffset(int square1, int square2, out int fileOrRankDiff)
     {
-        if (!(square1 >= 0 && square1 <= Board.MaxSquare) || !(square2 >= 0 && square2 <= Board.MaxSquare) || (square1 == square2))
+        if (!(square1 >= 0 && square1 <= Board.MAX_SQUARE) || !(square2 >= 0 && square2 <= Board.MAX_SQUARE) || (square1 == square2))
         {
             throw new System.Exception("ERROR");
         }

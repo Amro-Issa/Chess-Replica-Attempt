@@ -38,6 +38,7 @@ public class DragAndDrop : MonoBehaviour
             }
             else if (Input.GetKeyDown(KeyCode.Mouse1))
             {
+                //suspends drag and drop if right mouse button was clicked
                 Destroy(draggedPiece);
                 draggedPiece = null;
                 active = false;
