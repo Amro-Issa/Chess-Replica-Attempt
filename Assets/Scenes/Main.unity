@@ -4009,7 +4009,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1039333958
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4024,11 +4024,11 @@ RectTransform:
   - {fileID: 2065979721}
   - {fileID: 280593020}
   m_Father: {fileID: 1061301150}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 292, y: -203}
+  m_AnchoredPosition: {x: -399, y: -123}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1041449257
@@ -4250,8 +4250,8 @@ RectTransform:
   - {fileID: 2114800448}
   - {fileID: 135912224}
   - {fileID: 279513007}
-  - {fileID: 1852659779}
   - {fileID: 1039333958}
+  - {fileID: 1852659779}
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5300,7 +5300,7 @@ GameObject:
   - component: {fileID: 1285392868}
   - component: {fileID: 1285392867}
   m_Layer: 5
-  m_Name: Text
+  m_Name: HelpText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5840,13 +5840,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03d95314779cfaf4fbfe803b1348fba4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GameUI: {fileID: 135912223}
   squarePrefab: {fileID: 1442150028430382501, guid: a7c5cd898c6c8ce41b874d918a6e28d5,
     type: 3}
   squaresParent: {fileID: 630589945}
   whitePiecesParent: {fileID: 1721984304}
   blackPiecesParent: {fileID: 1044953274}
-  spritesParent: {fileID: 949552092}
   lightSquareColor: {r: 0.94509804, g: 0.8509804, b: 0.7529412, a: 1}
   darkSquareColor: {r: 0.6627451, g: 0.47843137, b: 0.39607844, a: 1}
   selectionSquareColor: {r: 0, g: 0, b: 0, a: 0}
@@ -5884,8 +5882,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canvas: {fileID: 1061301146}
-  SettingsGameObject: {fileID: 283725945}
+  GameMenuObject: {fileID: 135912223}
+  DragAndDropMenuObject: {fileID: 1039333957}
   RandomPositionSettingsGameObject: {fileID: 279513006}
+  SettingsGameObject: {fileID: 283725945}
+  HelpText: {fileID: 1285392867}
   RulesToggles:
   - {fileID: 973059134}
   - {fileID: 427975164}
@@ -5895,6 +5896,7 @@ MonoBehaviour:
   PawnPromotionGUI: {fileID: 1852659778}
   ToggleTurnButton: {fileID: 1916441669}
   ToggleTurnText: {fileID: 1177649270}
+  boardSpritesParent: {fileID: 949552092}
 --- !u!114 &1565588887
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6446,7 +6448,7 @@ RectTransform:
   - {fileID: 1188168030}
   - {fileID: 1997557848}
   m_Father: {fileID: 1061301150}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -6780,7 +6782,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 16, y: 151}
+  m_AnchoredPosition: {x: 16, y: 164}
   m_SizeDelta: {x: 81.999695, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1916441669

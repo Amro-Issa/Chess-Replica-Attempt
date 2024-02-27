@@ -6,6 +6,13 @@ using UnityEngine.UI;
 
 public class UI : MonoBehaviour
 {
+    enum Menu
+    {
+        Game,
+        RandomPositionsSettings,
+        DragAndDrop
+    }
+
     public static UI Instance { get; private set; }
 
     [SerializeField] public GameObject canvas;
@@ -71,32 +78,52 @@ public class UI : MonoBehaviour
         }
     }
 
-    [SerializeField] private GameObject SettingsGameObject;
+    [SerializeField] private GameObject GameMenuObject;
+    [SerializeField] private GameObject DragAndDropMenuObject;
     [SerializeField] private GameObject RandomPositionSettingsGameObject;
+
+    [SerializeField] private GameObject SettingsGameObject;
+
+    [SerializeField] private Text HelpText;
+
     [SerializeField] private Toggle[] RulesToggles;
 
     [SerializeField] private Text LegalMovesDisplay;
 
     [SerializeField] private GameObject PawnPromotionGUI;
 
+    private const KeyCode randomPosMenuKey = KeyCode.Tab;
+    private const KeyCode dragAndDropKey = KeyCode.X;
+
     public Button ToggleTurnButton;
     public Text ToggleTurnText;
+
+    [SerializeField] private GameObject boardSpritesParent;
+    private readonly List<Menu> menusRequiringBoard = new List<Menu>{ Menu.Game, Menu.DragAndDrop };
 
     void Awake()
     {
         Instance = this;
         ToggleTurnButton.onClick.AddListener(() => MoveManager.PlayerTurn = MoveManager.PlayerTurn == Piece.PieceColor.White ? Piece.PieceColor.Black : Piece.PieceColor.White);
+
+        HelpText.text = $"- Press '{Board.clearBoardKey}' to clear board" +
+             $"\n- Press '{Board.defaultBoardKey}' to generate default starting position" +
+             $"\n- Press '{Board.randomBoardKey}' to generate random starting position" +
+             "\n- To generate a specific position, enter the FEN in the input field above";
     }
 
     void Update()
     {
-        if (!PawnPromotionInProgress && Input.GetKeyDown(KeyCode.Tab))
+        if (!PawnPromotionInProgress)
         {
-            Board.Instance.spritesParent.SetActive(!Board.Instance.spritesParent.activeInHierarchy);
-            Board.Instance.GameUI.SetActive(!Board.Instance.GameUI.activeInHierarchy);
-            IsSettingsActive = !IsSettingsActive;
-
-            RandomPositionSettingsGameObject.SetActive(!RandomPositionSettingsGameObject.activeInHierarchy);
+            if (Input.GetKeyDown(randomPosMenuKey))
+            {
+                OpenMenu(RandomPositionSettingsGameObject.activeInHierarchy ? Menu.Game : Menu.RandomPositionsSettings);
+            }
+            else if (Input.GetKeyDown(dragAndDropKey))
+            {
+                OpenMenu(DragAndDropMenuObject.activeInHierarchy ? Menu.Game : Menu.DragAndDrop);
+            }
         }
     }
 
@@ -156,6 +183,32 @@ public class UI : MonoBehaviour
     {
         Pawn.pawnToBePromoted.Promote(pieceTypeSO.pieceType);
         PawnPromotionInProgress = false;
+    }
+
+    private GameObject GetMenuGameObject(Menu menu)
+    {
+        switch (menu)
+        {
+            case Menu.Game:
+                return GameMenuObject;
+            case Menu.RandomPositionsSettings:
+                return RandomPositionSettingsGameObject;
+            case Menu.DragAndDrop:
+                return DragAndDropMenuObject;
+            default:
+                throw new Exception();
+        }
+    }
+
+    private void OpenMenu(Menu menu)
+    {
+        foreach (Menu m in Enum.GetValues(typeof(Menu)))
+        {
+            GetMenuGameObject(m).SetActive(m == menu ? true : false);
+        }
+
+        bool requiresBoard = menusRequiringBoard.Contains(menu);
+        boardSpritesParent.SetActive(requiresBoard);
     }
 
     public void Reset()

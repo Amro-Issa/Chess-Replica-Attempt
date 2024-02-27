@@ -6,11 +6,8 @@ public class Board : MonoBehaviour
 {
     public static Board Instance { get; private set; }
 
-    public GameObject GameUI;
-
     [SerializeField] private GameObject squarePrefab, squaresParent;
     public GameObject whitePiecesParent, blackPiecesParent;
-    public GameObject spritesParent;
 
     public Color lightSquareColor, darkSquareColor, selectionSquareColor;
 
@@ -50,6 +47,10 @@ public class Board : MonoBehaviour
         }
     }
 
+    public const KeyCode clearBoardKey = KeyCode.C;
+    public const KeyCode defaultBoardKey = KeyCode.D;
+    public const KeyCode randomBoardKey = KeyCode.R;
+
 
     void Start()
     {
@@ -76,15 +77,15 @@ public class Board : MonoBehaviour
     {
         if (UI.IsSettingsActive)
         {
-            if (Input.GetKeyDown(KeyCode.C))
+            if (Input.GetKeyDown(clearBoardKey))
             {
                 ClearBoard();
             }
-            else if (Input.GetKeyDown(KeyCode.D)) //starting pos
+            else if (Input.GetKeyDown(defaultBoardKey)) //starting pos
             {
                 CreatePositionFromFen(StartingFen);
             }
-            else if (Input.GetKeyDown(KeyCode.R)) //random pos
+            else if (Input.GetKeyDown(randomBoardKey)) //random pos
             {
                 CreatePositionFromFen(GenerateRandomStartingFen(RandomGenerationExclusions));
             }
