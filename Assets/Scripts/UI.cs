@@ -134,7 +134,7 @@ public class UI : MonoBehaviour
             }
             else if (Input.GetKeyDown(changeViewKey))
             {
-                ChangeView();
+                ChangeBoardView();
             }
         }
     }
@@ -223,7 +223,7 @@ public class UI : MonoBehaviour
         boardSpritesParent.SetActive(requiresBoard);
     }
 
-    public static void ChangeView()
+    public static void ChangeBoardView()
     {
         foreach (List<Piece> lst in new List<Piece>[] { Board.WhitePieces, Board.BlackPieces })
         {
@@ -236,7 +236,7 @@ public class UI : MonoBehaviour
         Camera.main.transform.Rotate(Vector3.forward * 180);
     }
 
-    public static void ChangeView(Piece.PieceColor color)
+    public static void ChangeBoardView(Piece.PieceColor color)
     {
         Camera.main.transform.rotation = Quaternion.identity; //resets camera rotation
 
@@ -251,7 +251,7 @@ public class UI : MonoBehaviour
         //rotate camera if black, otherwise, do nothing because it is already on white
         if (color == Piece.PieceColor.Black)
         {
-            ChangeView();
+            ChangeBoardView();
         }
     }
 

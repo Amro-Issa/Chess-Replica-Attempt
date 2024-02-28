@@ -232,6 +232,9 @@ public class Board : MonoBehaviour
                 currentSquareNumber++;
             }
         }
+
+        //resetting the board view (was causing some problems)
+        UI.ChangeBoardView(Piece.PieceColor.White);
     }
     private static string GenerateRandomStartingFen()
     {

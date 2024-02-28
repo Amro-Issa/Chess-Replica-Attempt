@@ -16,7 +16,7 @@ public class MoveManager : MonoBehaviour
 
             UI.Instance.ToggleTurnText.text = value.ToString();
 
-            if (AutoChangeView) UI.ChangeView(playerTurn);
+            if (AutoChangeView) UI.ChangeBoardView(playerTurn);
         }
     }
 
