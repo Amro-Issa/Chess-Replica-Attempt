@@ -8,3 +8,5 @@ His video: https://youtu.be/U4ogK0MIzqk
 His repository: https://github.com/SebLague/Chess-AI
 
 All code is my own.
+
+Download release (located on the right) and run the .exe to play.
