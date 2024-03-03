@@ -83,7 +83,7 @@ public class MoveManager : MonoBehaviour
                     selectedPieceLegalMoves = selectedPiece.GetLegalMoves();
 
                     HighlightLegalSquares(squareHit.SquareNumber, selectedPieceLegalMoves);
-                    UI.UpdateLegalMovesDisplay(selectedPieceLegalMoves, selectedPiece.isPinned);
+                    UI.UpdateLegalMovesDisplay(selectedPieceLegalMoves, selectedPiece.isPinned, squareHit.piece);
                 }
                 else if (pieceSelected) //checking for move play
                 {

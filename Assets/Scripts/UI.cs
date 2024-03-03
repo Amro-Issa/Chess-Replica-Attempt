@@ -180,9 +180,10 @@ public class UI : MonoBehaviour
         MoveManager.PawnPromotionAllowed = RulesToggles[3].isOn;
     }
 
-    public static void UpdateLegalMovesDisplay(List<int> legalMoves, bool isPinned)
+    public static void UpdateLegalMovesDisplay(List<int> legalMoves, bool isPinned, Piece piece)
     {
-        string x = $"({legalMoves.Count} legal moves)\n";
+        string x = $"{Square.SquareNumberToAlphaNumeric(piece.square.SquareNumber)} {piece.type}\n";
+        x += $"({legalMoves.Count} legal moves)\n";
         foreach (int move in legalMoves)
         {
             x += Square.SquareNumberToAlphaNumeric(move).ToUpper() + "\n";
