@@ -67,6 +67,7 @@ public class MoveManager : MonoBehaviour
         {
             if (Board.gameState == Board.GameState.Bot && playerTurn == Bot.color)
             {
+                //if game mode is 1v1 against bot and it is the bot's turn
                 StartCoroutine(Bot.PlayBestMove());
             }
             else

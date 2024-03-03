@@ -63,11 +63,11 @@ public static class Bot
 
         if (pieceToMove != null && targetSquare != null)
         {
-            MoveManager.PlayerTurn = Piece.GetOppositeColor(color);
             BotMovementInProgress = true;
             yield return new WaitForSeconds(BotPlayDelay);
             MoveManager.PlayMove(pieceToMove, targetSquare);
             BotMovementInProgress = false;
+            MoveManager.PlayerTurn = Piece.GetOppositeColor(color);
         }
     }
 }
