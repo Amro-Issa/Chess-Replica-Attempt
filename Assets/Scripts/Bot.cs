@@ -69,5 +69,9 @@ public static class Bot
             BotMovementInProgress = false;
             MoveManager.PlayerTurn = Piece.GetOppositeColor(color);
         }
+        else
+        {
+            throw new Exception();
+        }
     }
 }
