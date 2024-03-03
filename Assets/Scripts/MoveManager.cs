@@ -38,7 +38,11 @@ public class MoveManager : MonoBehaviour
         set
         {
             _autoChangeView = value;
-            UI.Instance.autoChangeViewToggle.isOn = value;
+
+            if (UI.Instance?.autoChangeViewToggle != null)
+            {
+                UI.Instance.autoChangeViewToggle.isOn = value;
+            }
         }
     }
 
@@ -59,10 +63,18 @@ public class MoveManager : MonoBehaviour
 
     void Update()
     {
-        if (!GameOver && !UI.PawnPromotionInProgress)
+        if (!GameOver && !UI.PawnPromotionInProgress && !Bot.BotMovementInProgress)
         {
-            CheckForPieceSelectionOrMove(PlayerTurn);
+            if (Board.gameState == Board.GameState.Bot && playerTurn == Bot.color)
+            {
+                StartCoroutine(Bot.PlayBestMove());
+            }
+            else
+            {
+                CheckForPieceSelectionOrMove(PlayerTurn);
+            }
         }
+
     }
 
     public static void CheckForPieceSelectionOrMove(Piece.PieceColor color)
@@ -91,6 +103,8 @@ public class MoveManager : MonoBehaviour
                     {
                         PlayMove(selectedPiece, squareHit);
                         PlayerTurn = Piece.GetOppositeColor(PlayerTurn);
+                        
+                        ResetSelection();
 
                         #region
                         /*if (playerTurn == Piece.PieceColor.White)
@@ -123,8 +137,6 @@ public class MoveManager : MonoBehaviour
                         }*/
                         #endregion
                     }
-
-                    ResetSelection();
                 }
                 
             }

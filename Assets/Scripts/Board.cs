@@ -2,8 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class Board : MonoBehaviour
 {
+    public enum GameState
+    {
+        Bot,
+        Local,
+        Dev
+    }
+
     public static Board Instance { get; private set; }
 
     [SerializeField] private GameObject squarePrefab, squaresParent;
@@ -51,6 +59,8 @@ public class Board : MonoBehaviour
     public const KeyCode defaultBoardKey = KeyCode.D;
     public const KeyCode randomBoardKey = KeyCode.R;
 
+    public static GameState gameState;
+
 
     void Start()
     {
@@ -75,7 +85,7 @@ public class Board : MonoBehaviour
 
     void Update()
     {
-        if (UI.IsSettingsActive)
+        if (gameState == GameState.Dev && UI.IsSettingsActive)
         {
             if (Input.GetKeyDown(clearBoardKey))
             {

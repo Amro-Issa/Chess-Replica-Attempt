@@ -21,14 +21,15 @@ public class UI : MonoBehaviour
     private static bool _isSettingsActive = true;
     public static bool IsSettingsActive
     {
-        get
-        {
-            return _isSettingsActive;
-        }
+        get =>_isSettingsActive;
         set
         {   
             _isSettingsActive = value;
-            Instance.SettingsGameObject.SetActive(value);
+
+            if (Instance.SettingsGameObject != null)
+            {
+                Instance.SettingsGameObject.SetActive(value);
+            }
         }
     }
     
@@ -107,22 +108,26 @@ public class UI : MonoBehaviour
     void Awake()
     {
         Instance = this;
-        ToggleTurnButton.onClick.AddListener(() => MoveManager.PlayerTurn = MoveManager.PlayerTurn == Piece.PieceColor.White ? Piece.PieceColor.Black : Piece.PieceColor.White);
 
-        autoChangeViewToggle.onValueChanged.AddListener((bool state) => MoveManager.AutoChangeView = state);
+        if (Board.gameState == Board.GameState.Dev)
+        {
+            ToggleTurnButton.onClick.AddListener(() => MoveManager.PlayerTurn = MoveManager.PlayerTurn == Piece.PieceColor.White ? Piece.PieceColor.Black : Piece.PieceColor.White);
 
-        HelpText.text = $"- Press {Board.clearBoardKey} to clear board" +
-             $"\n- Press {Board.defaultBoardKey} to generate default starting position" +
-             $"\n- Press {Board.randomBoardKey} to generate random starting position" +
-             "\n- To generate a specific position, enter the FEN in the input field above" +
-             $"\n- Press {randomPosMenuKey} to adjust which pieces are included in the random generation" +
-             $"\n- Press {dragAndDropKey} to open the drag and drop menu" +
-             $"\n- Press {changeViewKey} to change board view";
+            autoChangeViewToggle.onValueChanged.AddListener((bool state) => MoveManager.AutoChangeView = state);
+
+            HelpText.text = $"- Press {Board.clearBoardKey} to clear board" +
+                 $"\n- Press {Board.defaultBoardKey} to generate default starting position" +
+                 $"\n- Press {Board.randomBoardKey} to generate random starting position" +
+                 "\n- To generate a specific position, enter the FEN in the input field above" +
+                 $"\n- Press {randomPosMenuKey} to adjust which pieces are included in the random generation" +
+                 $"\n- Press {dragAndDropKey} to open the drag and drop menu" +
+                 $"\n- Press {changeViewKey} to change board view";
+        }
     }
 
     void Update()
     {
-        if (!PawnPromotionInProgress)
+        if (Board.gameState == Board.GameState.Dev && !PawnPromotionInProgress)
         {
             if (Input.GetKeyDown(randomPosMenuKey))
             {
@@ -258,9 +263,12 @@ public class UI : MonoBehaviour
 
     public void Reset()
     {
-        for (int i = 0; i < Instance.RulesToggles.Length; i++)
+        if (Board.gameState == Board.GameState.Dev)
         {
-            Instance.RulesToggles[i].isOn = true;
+            for (int i = 0; i < Instance.RulesToggles.Length; i++)
+            {
+                Instance.RulesToggles[i].isOn = true;
+            }
         }
     }
 }
