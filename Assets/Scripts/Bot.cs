@@ -35,7 +35,7 @@ public static class Bot
     {
         List<Piece> pieces = Board.GetPieces(color);
 
-        if (pieces.Count > 0)
+        while (pieces.Count > 0)
         {
             int pieceIndex = UnityEngine.Random.Range(0, pieces.Count);
 
@@ -51,6 +51,9 @@ public static class Bot
                 
                 return;
             }
+
+            //removing piece from list because it has no legal moves
+            pieces.RemoveAt(pieceIndex);
         }
 
         pieceToMove = null;
