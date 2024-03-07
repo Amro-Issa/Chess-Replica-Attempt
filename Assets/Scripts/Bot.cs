@@ -33,6 +33,14 @@ public static class Bot
     //currently doesn't actually get the best move, just a random one
     internal static void GetBestMove(out Piece pieceToMove, out Square targetSquare)
     {
+        GetRandomMove(out Piece p, out Square s);
+
+        pieceToMove = p;
+        targetSquare = s;
+    }
+
+    private static void GetRandomMove(out Piece pieceToMove, out Square targetSquare)
+    {
         List<Piece> pieces = Board.GetPieces(color);
 
         while (pieces.Count > 0)
@@ -48,7 +56,7 @@ public static class Bot
                 int moveIndex = UnityEngine.Random.Range(0, legalMoves.Count);
 
                 targetSquare = Board.Squares[legalMoves[moveIndex]];
-                
+
                 return;
             }
 
