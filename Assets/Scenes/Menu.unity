@@ -704,7 +704,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Made by A.I.
+  m_Text: Made by Amro I.
 --- !u!222 &341095696
 CanvasRenderer:
   m_ObjectHideFlags: 0
