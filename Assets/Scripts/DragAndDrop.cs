@@ -66,7 +66,7 @@ public class DragAndDrop : MonoBehaviour
         {
             Square square = hit.collider.GetComponent<Square>();
 
-            square.Unoccupy(destroyPiece: true);
+            square.Unoccupy(destroyCurrentPiece: true);
             Piece.CreateNewPiece(draggedPieceIdentifier.color, draggedPieceIdentifier.type, square);
         }
 

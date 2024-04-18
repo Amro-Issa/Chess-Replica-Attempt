@@ -185,7 +185,7 @@ public abstract class Piece
     /// <returns></returns>
     public List<int> GetLegalMoves(bool accountForPin = true, bool accountForCheck = true)
     {
-        var moves = GetRawMoves();
+        List<int> moves = GetRawMoves();
         
         foreach(int move in moves.ToArray())
         {
@@ -277,7 +277,7 @@ public abstract class Piece
 
         //Checking for check, checkmate and stalemate
         King.kingPieceUnderCheck = null;
-        MoveManager.checkers.Clear();
+        MoveManager.Checkers.Clear();
         if (GetAllLegalMoves(color).Contains(Board.GetKing(GetOppositeColor(color)).square.SquareNumber))
         {
             //if enemy king is under check
@@ -287,7 +287,7 @@ public abstract class Piece
             {
                 if (piece.GetRawMoves().Contains(King.kingPieceUnderCheck.square.SquareNumber))
                 {
-                    MoveManager.checkers.Add(piece);
+                    MoveManager.Checkers.Add(piece);
                 }
             }
 
@@ -300,7 +300,7 @@ public abstract class Piece
             else
             {
                 Debug.Log($"{GetOppositeColor(color)} is under check!");
-                Debug.Log($"Number of checkers: {MoveManager.checkers.Count}");
+                Debug.Log($"Number of checkers: {MoveManager.Checkers.Count}");
             }
         }
         else if (GetAllLegalMoves(GetOppositeColor(color)).Count == 0)
@@ -322,24 +322,24 @@ public abstract class Piece
     /// <param name="legalMoves"></param>
     public virtual void AdjustMovesForCheck(ref List<int> legalMoves)
     {
-        if (MoveManager.checkers.Count == 0)
+        if (MoveManager.Checkers.Count == 0)
         {
             throw new Exception("Method \"AdjustMovesForCheck\" was called even though king is not under check");
         }
 
         //need to account for one checker and more than one checker
-        if (MoveManager.checkers.Count == 1)
+        if (MoveManager.Checkers.Count == 1)
         {
             //checking for blocking moves or capture
-            if (Square.TryGetSquaresInBetween(King.kingPieceUnderCheck.square.SquareNumber, MoveManager.checkers[0].square.SquareNumber, out List<int> squaresInBetween, inclusiveOfSquare2: true))
+            if (Square.TryGetSquaresInBetween(King.kingPieceUnderCheck.square.SquareNumber, MoveManager.Checkers[0].square.SquareNumber, out List<int> squaresInBetween, inclusiveOfSquare2: true))
             {
                 legalMoves = legalMoves.Intersect(squaresInBetween).ToList();
                 return;
             }
-            else if(legalMoves.Contains(MoveManager.checkers[0].square.SquareNumber))
+            else if(legalMoves.Contains(MoveManager.Checkers[0].square.SquareNumber))
             {
                 legalMoves.Clear();
-                legalMoves.Add(MoveManager.checkers[0].square.SquareNumber);
+                legalMoves.Add(MoveManager.Checkers[0].square.SquareNumber);
                 return;
             }
         }
@@ -401,32 +401,50 @@ public class Pawn : Piece
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="absolute">if true, gets the raw moves assuming that the piece is the only piece on the board (no blocking)</param>
+    /// <returns></returns>
     public override List<int> GetRawMoves(bool absolute = false)
     {
+        List<Move> moveList = new List<Move>();
         var moves = new List<int>();
         List<Square.Direction> offsets = (color == PieceColor.White) ? Square.whitePawnOffsets : Square.blackPawnOffsets; //order is important
 
         foreach (var offset in offsets)
         {
-            int num = square.SquareNumber + (int)offset;
+            int targetSquareNum = square.SquareNumber + (int)offset;
 
             //checking if the square is actually on the board (in bound)
-            if (Square.IsSquareInRange(num) && Square.AreSquaresAdjacent(square.SquareNumber, num))
+            if (Square.IsSquareInRange(targetSquareNum) && Square.AreSquaresAdjacent(square.SquareNumber, targetSquareNum))
             {
                 if (Square.VerticalOffsets.Contains(offset))
                 {
-                    if (absolute || Board.Squares[num].piece == null)
+                    //if offset is up or down
+                    if (absolute || Square.IsSquareClear(targetSquareNum))
                     {
-                        moves.Add(num);
+                        PawnMove move = new PawnMove(square, Board.Squares[targetSquareNum], this);
+                        moveList.Add(move);
+                        moves.Add(targetSquareNum);
 
-                        if (IsDoubleAdvancementAvailable()) moves.Add(num + (int)offset);
+                        if (IsDoubleAdvancementAvailable())
+                        {
+                            int t = targetSquareNum + (int)offset;
+                            move = new PawnMove(square, Board.Squares[t], this);
+                            moveList.Add(move);
+                            moves.Add(t);
+                        }
                     }
                 }
                 else if (Square.DiagonalOffsets.Contains(offset))
                 {
-                    if (absolute || Board.Squares[num].piece?.color == GetOppositeColor(color) || (Board.Squares[num] == enPassantSquare && enPassantPawn.color == GetOppositeColor(color)))
+                    //if offset is topLeft/topRight or bottomLeft/bottomRight
+                    if (absolute || Board.Squares[targetSquareNum].piece?.color == GetOppositeColor(color) || (Board.Squares[targetSquareNum] == enPassantSquare && enPassantPawn.color == GetOppositeColor(color)))
                     {
-                        moves.Add(num);
+                        PawnMove move = new PawnMove(square, Board.Squares[targetSquareNum], this);
+                        moveList.Add(move);
+                        moves.Add(targetSquareNum);
                     }
                 }
             }
@@ -658,7 +676,7 @@ public sealed class King : Piece
         var enemyRawMoves = GetAllRawMoves(GetOppositeColor(color));
         var checkersRawMoves = new List<int>();
 
-        foreach (Piece checker in MoveManager.checkers)
+        foreach (Piece checker in MoveManager.Checkers)
         {
             if (!(checker is Pawn))
             {

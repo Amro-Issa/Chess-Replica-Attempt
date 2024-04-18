@@ -24,7 +24,15 @@ public class MoveManager : MonoBehaviour
     private static Piece selectedPiece = null;
     private static List<int> selectedPieceLegalMoves = null;
 
-    public static List<Piece> checkers = null;
+    private static List<Piece> checkers = null;
+    public static List<Piece> Checkers
+    {
+        get => checkers;
+        set
+        {
+            checkers = value;
+        }
+    }
 
     public static bool CastleAllowed { get; set; } = true;
     public static bool CheckAllowed { get; set; } = true;
@@ -52,7 +60,7 @@ public class MoveManager : MonoBehaviour
     public LayerMask squaresLayer;
     [SerializeField] private GameObject audioSources;
 
-    void Awake()
+    void Start()
     {
         if (Instance != null) Destroy(this);
 
@@ -222,7 +230,7 @@ public class MoveManager : MonoBehaviour
         pieceSelected = false;
         selectedPiece = null;
         selectedPieceLegalMoves = null;
-        checkers = new List<Piece>();
+        Checkers = new List<Piece>();
 
         CastleAllowed = true;
         CheckAllowed = true;

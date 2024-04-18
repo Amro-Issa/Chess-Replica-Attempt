@@ -29,16 +29,7 @@ public static class Bot
             botMovementInProgress = value;
         }
     }
-
-    //currently doesn't actually get the best move, just a random one
-    internal static void GetBestMove(out Piece pieceToMove, out Square targetSquare)
-    {
-        GetRandomMove(out Piece p, out Square s);
-
-        pieceToMove = p;
-        targetSquare = s;
-    }
-
+    
     private static void GetRandomMove(out Piece pieceToMove, out Square targetSquare)
     {
         List<Piece> pieces = Board.GetPieces(color);
@@ -66,6 +57,20 @@ public static class Bot
 
         pieceToMove = null;
         targetSquare = null;
+    }
+
+    //currently doesn't actually get the best move, just a random one
+    internal static void GetBestMove(out Piece pieceToMove, out Square targetSquare)
+    {
+        ////will always capture a checker
+        //if (MoveManager.Checkers.Count)
+        //{
+
+        //}
+        GetRandomMove(out Piece p, out Square s);
+
+        pieceToMove = p;
+        targetSquare = s;
     }
 
     internal static IEnumerator PlayBestMove()

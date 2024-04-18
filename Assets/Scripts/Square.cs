@@ -115,9 +115,9 @@ public class Square : MonoBehaviour
         }
     }
 
-    public void Unoccupy(bool destroyPiece = false)
+    public void Unoccupy(bool destroyCurrentPiece = false)
     {
-        if (destroyPiece && piece != null)
+        if (destroyCurrentPiece && piece != null)
         {
             Destroy(piece.gameObj);
         }
@@ -296,6 +296,7 @@ public class Square : MonoBehaviour
 
         if (!TryGetOffset(square1, square2, out int offsetFromSquare1, out int diff))
         {
+            //returns false only if the two squares are unreachable (not if they are the same square)
             return false;
         }
 
@@ -303,11 +304,6 @@ public class Square : MonoBehaviour
         {
             squares.Add(temp);
             temp += offsetFromSquare1;
-        }
-
-        if (squares.Count == 0)
-        {
-            return false;
         }
 
         return true;
@@ -329,26 +325,12 @@ public class Square : MonoBehaviour
             return true;
         }
 
+        //throwing exception if squares are unreachable
         throw new Exception();
     }
     public static bool AreSquaresInBetweenEmpty(Piece piece1, Piece piece2)
     {
-        if (TryGetSquaresInBetween(piece1.square.SquareNumber, piece2.square.SquareNumber, out List<int> squaresInBetween))
-        {
-            foreach (int squareNumber in squaresInBetween)
-            {
-                if (Board.Squares[squareNumber].piece == null)
-                {
-                    continue;
-                }
-
-                return false;
-            }
-
-            return true;
-        }
-
-        throw new System.Exception();
+        return AreSquaresInBetweenEmpty(piece1.square.SquareNumber, piece2.square.SquareNumber);
     }
     #endregion
 
@@ -433,7 +415,7 @@ public class Square : MonoBehaviour
     #endregion
 
     /// <summary>
-    /// Checks and returns whether the two squares can be reached from one another by taking a horizontal, vertical or diagonal path
+    /// Checks and returns whether the two squares can be reached from one another by taking a single horizontal, vertical or diagonal path
     /// </summary>
     /// <param name="square1"></param>
     /// <param name="square2"></param>
@@ -462,5 +444,15 @@ public class Square : MonoBehaviour
         }
 
         return false;
+    }
+
+    public static bool IsSquareClear(int squareNumber)
+    {
+        if (IsSquareInRange(squareNumber))
+        {
+            return Board.Squares[squareNumber].piece == null;
+        }
+
+        throw new Exception();
     }
 }

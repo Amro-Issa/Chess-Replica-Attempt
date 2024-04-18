@@ -7,12 +7,20 @@ public class Board : MonoBehaviour
 {
     public enum GameState
     {
+        MainMenu,
         Bot,
         Local,
-        Dev
+        Dev,
     }
 
     public static Board Instance { get; private set; }
+
+    public static Dictionary<Piece.PieceType, PieceTypeSO> PieceTypeToSO = new Dictionary<Piece.PieceType, PieceTypeSO>();
+    public static Dictionary<int, Square> Squares = new Dictionary<int, Square>();
+    
+    public static HashSet<Piece.PieceType> RandomGenerationExclusions = new HashSet<Piece.PieceType>();
+
+    public static GameState gameState;
 
     [SerializeField] private GameObject squarePrefab, squaresParent;
     public GameObject whitePiecesParent, blackPiecesParent;
@@ -20,9 +28,6 @@ public class Board : MonoBehaviour
     public Color lightSquareColor, darkSquareColor, selectionSquareColor;
 
     public PieceTypeSO[] pieceTypeSOArray = new PieceTypeSO[5]; //ORDER MUST BE: pawn,knight,bishop,rook,queen,king
-
-    public static Dictionary<Piece.PieceType, PieceTypeSO> PieceTypeToSO = new Dictionary<Piece.PieceType, PieceTypeSO>();
-    public static Dictionary<int, Square> Squares = new Dictionary<int, Square>();
 
     public const string STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"; //in case you lose the string: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
 
@@ -38,7 +43,6 @@ public class Board : MonoBehaviour
 
     private const string PIECE_LETTERS = "pnbrqk"; //note: convert this to a dictionary with Piece.PieceType as they key type so that it is safer and cleaner
 
-    public static HashSet<Piece.PieceType> RandomGenerationExclusions = new HashSet<Piece.PieceType>();
 
     public static List<Piece> WhitePieces
     {
@@ -59,8 +63,6 @@ public class Board : MonoBehaviour
     public const KeyCode defaultBoardKey = KeyCode.D;
     public const KeyCode randomBoardKey = KeyCode.R;
 
-    public static GameState gameState;
-
 
     void Start()
     {
@@ -71,12 +73,15 @@ public class Board : MonoBehaviour
         else
         {
             Instance = this;
+            Reset();
         }
 
-
-        for (int i = 0; i < Enum.GetNames(typeof(Piece.PieceType)).Length; i++)
+        if (PieceTypeToSO.Count == 0)
         {
-            PieceTypeToSO.Add(pieceTypeSOArray[i].pieceType, pieceTypeSOArray[i]);
+            for (int i = 0; i < Enum.GetNames(typeof(Piece.PieceType)).Length; i++)
+            {
+                PieceTypeToSO.Add(pieceTypeSOArray[i].pieceType, pieceTypeSOArray[i]);
+            }
         }
 
         CreateBoard();
@@ -205,10 +210,12 @@ public class Board : MonoBehaviour
             {
                 //next rank
                 currentSquareNumber -= FILE_COUNT * 2;
+                continue;
             }
             else if (int.TryParse(character.ToString(), out int number))
             {
                 currentSquareNumber += number;
+                continue;
             }
             else
             {
@@ -240,6 +247,7 @@ public class Board : MonoBehaviour
                 }
                 
                 currentSquareNumber++;
+                continue;
             }
         }
 
@@ -437,5 +445,11 @@ public class Board : MonoBehaviour
         }
 
         return pieces;
+    }
+
+    private static void Reset()
+    {
+        //Squares.Clear();
+        //RandomGenerationExclusions.Clear();
     }
 }

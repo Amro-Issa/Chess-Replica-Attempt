@@ -13,7 +13,8 @@ public class MenuUI : MonoBehaviour
     [SerializeField] private Button playAgainstAnotherPlayerButton;
     [SerializeField] private Button devButton;
     [SerializeField] private Button quitButton;
-    
+
+    private const string mainMenuScene = "Menu";
     private const string againstBotScene = "Bot";
     private const string againstAnotherPlayerScene = "Local";
     private const string devScene = "Dev";
@@ -35,14 +36,18 @@ public class MenuUI : MonoBehaviour
         quitButton.onClick.AddListener(() => Application.Quit());
     }
 
-    private void LoadScene(Board.GameState state)
+    public static void LoadScene(Board.GameState state)
     {
         Board.gameState = state;
 
         switch (state)
         {
+            case Board.GameState.MainMenu:
+                SceneManager.LoadScene(mainMenuScene);
+                break;
             case Board.GameState.Bot:
                 Bot.color = Piece.PieceColor.Black;
+                MoveManager.AutoChangeView = false;
                 SceneManager.LoadScene(againstBotScene);
                 break;
             case Board.GameState.Local:
@@ -59,6 +64,6 @@ public class MenuUI : MonoBehaviour
 
     void Update()
     {
-        
+
     }
 }

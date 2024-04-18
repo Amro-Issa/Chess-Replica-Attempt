@@ -7,6 +7,7 @@ public class Test : MonoBehaviour
 {
     static bool flag = false;
     static Square highlightedSquare;
+    private readonly List<int> testlist = new List<int>();
 
     internal static void PrintMoves(List<int> selectedPieceLegalMoves)
     {
@@ -74,5 +75,9 @@ public class Test : MonoBehaviour
                 highlightedSquare.gameObject.GetComponent<SpriteRenderer>().color = Color.cyan;
             }
         }
+    }
+
+    private void Test2()
+    {
     }
 }

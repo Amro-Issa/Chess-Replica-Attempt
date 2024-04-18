@@ -10,7 +10,8 @@ public class UI : MonoBehaviour
     {
         Game,
         RandomPositionsSettings,
-        DragAndDrop
+        DragAndDrop,
+        Pause
     }
 
     public static UI Instance { get; private set; }
@@ -82,6 +83,7 @@ public class UI : MonoBehaviour
     [SerializeField] private GameObject GameMenuObject;
     [SerializeField] private GameObject DragAndDropMenuObject;
     [SerializeField] private GameObject RandomPositionSettingsGameObject;
+    [SerializeField] private GameObject PauseMenuGameObject;
 
     [SerializeField] private GameObject SettingsGameObject;
 
@@ -96,9 +98,15 @@ public class UI : MonoBehaviour
     private const KeyCode randomPosMenuKey = KeyCode.Tab;
     private const KeyCode dragAndDropKey = KeyCode.X;
     private const KeyCode changeViewKey = KeyCode.Space;
+    private const KeyCode pauseMenuKey = KeyCode.Escape;
 
     public Button ToggleTurnButton;
     public Text ToggleTurnText;
+
+    //pause menu
+    [SerializeField] private Button resumeButton;
+    [SerializeField] private Button mainMenuButton;
+    [SerializeField] private Button quitButton;
 
     [SerializeField] private GameObject boardSpritesParent;
     private readonly List<Menu> menusRequiringBoard = new List<Menu>{ Menu.Game, Menu.DragAndDrop };
@@ -123,12 +131,17 @@ public class UI : MonoBehaviour
                  $"\n- Press {dragAndDropKey} to open the drag and drop menu" +
                  $"\n- Press {changeViewKey} to change board view";
         }
+
+        resumeButton.onClick.AddListener(() => OpenMenu(Menu.Game));
+        mainMenuButton.onClick.AddListener(() => MenuUI.LoadScene(Board.GameState.MainMenu));
+        quitButton.onClick.AddListener(() => Application.Quit());
     }
 
     void Update()
     {
         if (Board.gameState == Board.GameState.Dev && !PawnPromotionInProgress)
         {
+            //toggle or untoggle menus
             if (Input.GetKeyDown(randomPosMenuKey))
             {
                 OpenMenu(RandomPositionSettingsGameObject.activeInHierarchy ? Menu.Game : Menu.RandomPositionsSettings);
@@ -141,6 +154,11 @@ public class UI : MonoBehaviour
             {
                 ChangeBoardView();
             }
+        }
+        
+        if (Input.GetKeyDown(pauseMenuKey))
+        {
+            OpenMenu(PauseMenuGameObject.activeInHierarchy ? Menu.Game : Menu.Pause);
         }
     }
 
@@ -213,6 +231,8 @@ public class UI : MonoBehaviour
                 return RandomPositionSettingsGameObject;
             case Menu.DragAndDrop:
                 return DragAndDropMenuObject;
+            case Menu.Pause:
+                return PauseMenuGameObject;
             default:
                 throw new Exception();
         }
@@ -222,7 +242,12 @@ public class UI : MonoBehaviour
     {
         foreach (Menu m in Enum.GetValues(typeof(Menu)))
         {
-            GetMenuGameObject(m).SetActive(m == menu ? true : false);
+            GameObject obj = GetMenuGameObject(m);
+
+            if (obj != null)
+            {
+                obj.SetActive(m == menu ? true : false);
+            }
         }
 
         bool requiresBoard = menusRequiringBoard.Contains(menu);
